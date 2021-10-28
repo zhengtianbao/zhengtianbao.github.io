@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% if site.rtl %}
+<html dir="rtl">
+{% else %}
+<html>
+{% endif %}
+<style type="text/css">
+#alwaysRight{
+  position: fixed; 
+  width: 200px;
+  top: 20px;
+  right: 10px;
+  font-size: 16px;
+}
+</style>
+<head>
+  {% include head.html %}
+</head>
+<body bgcolor="#F5F6F7">
+  {% include header.html %}
+
+  <div class="container">
+  
+  {{ content }}
+
+  {% include footer.html %}
+  {% include qunzi.html %}
+  </div><!-- /.main -->
+</body>
+</html>

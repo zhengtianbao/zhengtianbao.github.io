@@ -1,0 +1,34 @@
+---
+layout: default
+title: zhengtianbao's blog
+---
+<hr />
+
+<div class="listing">
+    {% for post in paginator.posts %}
+    <div class="post other link">
+      <h2></span> <a href="{{site.url}}{{post.url}}">{{ post.title }}</a></h2>
+      <p class="post-date"><img src="https://img.shields.io/badge/created-{{ post.date | date: '%Y--%m--%d'}}-brightgreen.svg" /></p>
+      <div class="panel-footer">
+        <i class="fa fa-tags text-primary"></i>
+        {% assign taglist = post.categories | sort %}
+        {% for tag in taglist %}
+            <small>
+              <a class="text-dblue" href="/tag/{{ tag | cgi_escape  }}" title="View posts tagged with &quot;{{ tag  }}&quot;">{{ tag  }}</a>
+              {% if forloop.last != true %}, {% endif %}
+            </small> 
+        {% endfor %}
+      </div>
+      {{ post.excerpt }}
+      {% capture content_words %} 
+        {{ post.content | number_of_words  }} 
+      {% endcapture %} 
+      {% capture excerpt_words %} 
+        {{ post.excerpt | number_of_words  }} 
+      {% endcapture %} 
+      {% if excerpt_words != content_words %}
+        <p align="right"><a class="btn btn-sm btn-primary" href="{{ post.url }}#read-more" role="button">Read more <i class="fa fa-arrow-circle-right"></i></a></p>
+      {% endif %}
+    </div>
+    {% endfor %}
+</div>

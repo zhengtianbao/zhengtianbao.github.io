@@ -347,7 +347,7 @@ zhengtianbao@thinkpad:~$ vim ~/.config/tanzu/tkg/clusterconfigs/workload1.yaml
 
 ```
 CLUSTER_CIDR: 100.96.0.0/11
-CLUSTER_NAME: my-workload-cluster
+CLUSTER_NAME: k8s-dev
 CLUSTER_PLAN: dev
 ```
 
@@ -465,8 +465,30 @@ zhengtianbao@thinkpad:~$ tanzu package installed list
 / Retrieving installed packages... 
   NAME        PACKAGE-NAME                           PACKAGE-VERSION  STATUS               
   multus-cni  multus-cni.community.tanzu.vmware.com  3.7.1            Reconcile succeeded 
-```
 
+zhengtianbao@thinkpad:~$ kubectl get pods -n kube-system
+NAME                                                  READY   STATUS    RESTARTS   AGE
+antrea-agent-nb278                                    2/2     Running   0          66m
+antrea-agent-pt8jf                                    2/2     Running   0          66m
+antrea-controller-785c67fcc4-fnfr8                    1/1     Running   0          66m
+coredns-657879bf57-sqzrj                              1/1     Running   0          68m
+coredns-657879bf57-zf45m                              1/1     Running   0          68m
+etcd-k8s-dev-control-plane-xn55p                      1/1     Running   0          68m
+kube-apiserver-k8s-dev-control-plane-xn55p            1/1     Running   0          68m
+kube-controller-manager-k8s-dev-control-plane-xn55p   1/1     Running   0          68m
+kube-multus-ds-amd64-bfqhw                            1/1     Running   0          47m
+kube-multus-ds-amd64-c8shz                            1/1     Running   0          47m
+kube-proxy-4hfq9                                      1/1     Running   0          68m
+kube-proxy-7h7s7                                      1/1     Running   0          67m
+kube-scheduler-k8s-dev-control-plane-xn55p            1/1     Running   0          68m
+kube-vip-k8s-dev-control-plane-xn55p                  1/1     Running   0          68m
+metrics-server-f77d8698b-dfjfd                        1/1     Running   0          66m
+vsphere-cloud-controller-manager-rkd2x                1/1     Running   0          66m
+vsphere-csi-controller-79b84df7f7-dw25b               6/6     Running   0          65m
+vsphere-csi-node-j8h55                                3/3     Running   0          65m
+vsphere-csi-node-lsm6b                                3/3     Running   0          65m
+
+```
 
 ## 测试
 
@@ -524,6 +546,45 @@ spec:
 ```
 annotations中的 macvlan-conf 为上面NetworkAttachmentDefinition定义的名字
 更详细的用法参见： <https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/quickstart.md>
+
+```
+zhengtianbao@thinkpad:~$ kubectl apply -f multus-cni-crd.yaml 
+networkattachmentdefinition.k8s.cni.cncf.io/macvlan-conf created
+zhengtianbao@thinkpad:~$ kubectl apply -f my-multi-cni-pod.yaml 
+pod/sample-pod created
+zhengtianbao@thinkpad:~$ kubectl get pods
+NAME         READY   STATUS    RESTARTS   AGE
+sample-pod   1/1     Running   0          3s
+zhengtianbao@thinkpad:~$ kubectl exec -it sample-pod -- ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+3: eth0@if9: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue 
+    link/ether 26:66:66:dd:91:0e brd ff:ff:ff:ff:ff:ff
+    inet 100.96.1.5/24 brd 100.96.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::2466:66ff:fedd:910e/64 scope link 
+       valid_lft forever preferred_lft forever
+4: net1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue 
+    link/ether be:95:2d:db:d9:36 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.100.21/24 brd 192.168.100.255 scope global net1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::bc95:2dff:fedb:d936/64 scope link 
+       valid_lft forever preferred_lft forever
+zhengtianbao@thinkpad:~$ ping 192.168.100.21
+PING 192.168.100.21 (192.168.100.21) 56(84) bytes of data.
+64 bytes from 192.168.100.21: icmp_seq=1 ttl=64 time=1.76 ms
+^C
+--- 192.168.100.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.762/1.762/1.762/0.000 ms
+```
+
+可以看到pod有两张网卡，且能ping通192.168.100.21
+
 
 注意: 因为是macvlan的方式，所以需要配置vswitch的网络为混杂模式。另外，pod无法与所在主机IP通信，因为macvlan的父设备只负责接收包，而不会处理包。
 

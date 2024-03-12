@@ -5,8 +5,7 @@ date: 2014-10-30 20:46:53
 categories: Python
 ---
 
-<div width="1024" height="512" align="center">
-![wsgi_threading_usage](/images/wsgi_threading_usage.jpeg)</div>
+<img width="1024" height="400" align="center" src="/images/wsgi_threading_usage.jpeg">
 
 本文记录了在使用 wsgiref 的 WSGIServer 时碰到的并发请求阻塞问题，事情的起因是在一个忙碌的周四接到个任务，需求是要模拟编写一个支付宝接口用来测试现有系统的支付流程完整性。
 

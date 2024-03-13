@@ -7,22 +7,27 @@ categories: Tanzu Kubernetes
 
 ![log](/images/tanzu.png)
 
-本文记录tanzu community版本在vSphere7环境的安装部署以及功能测试。
+本文记录 tanzu community 版本在 vSphere7 环境的安装部署以及功能测试。
 
 ## 环境信息
 
-因为资源受限，本文将在一台物理服务器上部署所有TKG(Tanzu Kubernetes Grid)环境。
+因为资源受限，本文将在一台物理服务器上部署所有 TKG（Tanzu Kubernetes Grid）环境。
+
 cpu: 8核
+
 内存: 40G
+
 硬盘: 500G
-网卡: 千兆网卡enp0s31f6
+
+网卡: 千兆网卡 enp0s31f6
+
 系统: Ubuntu 20.04 LTS
 
-通过kvm创建ESXi虚拟机，注意: 需要开启嵌套虚拟化支持
+通过 kvm 创建 ESXi 虚拟机，注意：需要开启嵌套虚拟化支持
 
-## 安装ESXi
+## 安装 ESXi
 
-kvm定义ESXi专用网络br0，IP地址规划为192.168.100.0/24
+kvm 定义 ESXi 专用网络 br0，IP 地址规划为：192.168.100.0/24
 
 ```xml
 <network>
@@ -44,7 +49,7 @@ kvm定义ESXi专用网络br0，IP地址规划为192.168.100.0/24
 </network>
 ```
 
-创建出来的虚拟网桥为virbr1
+创建出来的虚拟网桥为 virbr1
 
 ```
 zhengtianbao@thinkpad:~/esxi$ brctl show
@@ -54,7 +59,7 @@ virbr0		8000.52540086bf1f	yes		virbr0-nic
 
 ```
 
-定义ESXi虚拟机配置
+定义 ESXi 虚拟机配置
 
 ```xml
 <domain type='kvm' id='2'>
@@ -201,35 +206,33 @@ virbr0		8000.52540086bf1f	yes		virbr0-nic
 </domain>
 ```
 
-这里给ESXi配了两块qcow格式的100G的盘
+这里给 ESXi 配了两块 qcow 格式的 100G 的盘
 
-注意: CPU mode需要配置为`host-passthrough`，网卡 model 需要配置为`e1000e`
+注意：CPU mode 需要配置为 `host-passthrough`，网卡 model 需要配置为 `e1000e`
 
-等待ESXi虚拟机启动，按提示安装完毕后，上传[tinycore](http://tinycorelinux.net/13.x/x86/release/TinyCore-current.iso) 镜像创建虚拟机，测试网络联通性没问题即可进行下一步
+等待 ESXi 虚拟机启动，按提示安装完毕后，上传 [tinycore](http://tinycorelinux.net/13.x/x86/release/TinyCore-current.iso) 镜像创建虚拟机，测试网络联通性没问题即可进行下一步
 
+## 安装 vCenter
 
-## 安装vCenter
-
-本文vCenter部署在ESXi上，按提示部署， 需要注意的是在stage1中配置完毕后需要通过SSH连到vCenter虚拟机中加一条域名解析, 否则会安装进度条会卡住
+本文 vCenter 部署在 ESXi 上，按提示部署，需要注意的是在 stage1 中配置完毕后需要通过 SSH 连到 vCenter 虚拟机中加一条域名解析，否则会安装进度条会卡住
 
 /etc/hosts
 
 ```
-$vCenter_IP localhost 
+$vCenter_IP localhost
 ```
 
 完成安装之后，建议先对当前虚拟机打一个快照，这样如果第二阶段由于配置问题安装失败，可以重新尝试。
 
+## 安装 Tanzu
 
-## 安装Tanzu
+### 下载 tanzu CLI
 
-### 下载tanzu CLI
-
-从 https://github.com/vmware-tanzu/community-edition/releases 下载合适版本
+下载合适的版本：<https://github.com/vmware-tanzu/community-edition/releases>
 
 解压后执行 `install.sh`
 
-### 安装management Cluster
+### 安装 management Cluster
 
 ```
 zhengtianbao@thinkpad:~$ tanzu management-cluster create --ui
@@ -315,7 +318,7 @@ Providers:
 
 ```
 
-配置kubeconfig使用管理集群
+配置 kubeconfig 使用管理集群
 
 ```
 zhengtianbao@thinkpad:~$ tanzu management-cluster kubeconfig get mgmt --admin
@@ -330,16 +333,17 @@ mgmt-md-0-cd469cfc6-nktfb   Ready    <none>                 16m   v1.21.5+vmware
 ```
 
 
-### 安装workload集群
+### 安装 workload 集群
 
-利用managerment集群的配置文件创建workload集群
+利用 managerment 集群的配置文件创建 workload 集群
+
 ```
 zhengtianbao@thinkpad:~$ cp ./.config/tanzu/tkg/clusterconfigs/cjxfqluc5t.yaml ~/.config/tanzu/tkg/clusterconfigs/workload1.yaml
 zhengtianbao@thinkpad:~$ tanzu cluster list
   NAME  NAMESPACE  STATUS  CONTROLPLANE  WORKERS  KUBERNETES  ROLES  PLAN  
 ```
 
-需要修改workload集群的配置, 参考： <https://tanzucommunityedition.io/docs/latest/aws-wl-template/>
+需要修改 workload 集群的配置, 参考：<https://tanzucommunityedition.io/docs/latest/aws-wl-template/>
 
 ```
 zhengtianbao@thinkpad:~$ vim ~/.config/tanzu/tkg/clusterconfigs/workload1.yaml 
@@ -351,7 +355,8 @@ CLUSTER_NAME: k8s-dev
 CLUSTER_PLAN: dev
 ```
 
-创建workload集群
+创建 workload 集群
+
 ```
 zhengtianbao@thinkpad:~$ tanzu cluster create k8s-dev --file ~/.config/tanzu/tkg/clusterconfigs/workload1.yaml 
 Validating configuration...
@@ -404,9 +409,9 @@ tkg-system     tanzu-capabilities-controller-manager-7959d6b44-kxdr6   1/1     R
 
 ```
 
-### 安装multus-cni网络插件
+### 安装 multus-cni 网络插件
 
-配置repository
+配置 repository
 
 ```
 zhengtianbao@thinkpad:~$ tanzu package repository list
@@ -446,7 +451,7 @@ zhengtianbao@thinkpad:~$ tanzu package available list multus-cni.community.tanzu
   multus-cni.community.tanzu.vmware.com  3.7.1    2021-06-05 02:00:00 +0800 CST  
 ```
 
-安装multus-cni
+安装 multus-cni
 
 ```
 zhengtianbao@thinkpad:~$ tanzu package install multus-cni --package-name multus-cni.community.tanzu.vmware.com --version 3.7.1 
@@ -492,8 +497,7 @@ vsphere-csi-node-lsm6b                                3/3     Running   0       
 
 ## 测试
 
-创建multus CRD
-
+创建 multus CRD
 
 ```
 zhengtianbao@thinkpad:~$ cat multus-cni-crd.yaml 
@@ -520,7 +524,7 @@ spec:
     }'
 
 ```
-注意: 这里的eth0是workload集群node节点上的eth0网卡
+注意：这里的 eth0 是 workload 集群 node 节点上的 eth0 网卡
 
 创建测试容器
 
@@ -544,8 +548,9 @@ spec:
     imagePullPolicy: IfNotPresent
 
 ```
-annotations中的 macvlan-conf 为上面NetworkAttachmentDefinition定义的名字
-更详细的用法参见： <https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/quickstart.md>
+
+annotations 中的 macvlan-conf 为上面NetworkAttachmentDefinition 定义的名字
+更详细的用法参见：<https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/quickstart.md>
 
 ```
 zhengtianbao@thinkpad:~$ kubectl apply -f multus-cni-crd.yaml 
@@ -583,15 +588,11 @@ PING 192.168.100.21 (192.168.100.21) 56(84) bytes of data.
 rtt min/avg/max/mdev = 1.762/1.762/1.762/0.000 ms
 ```
 
-可以看到pod有两张网卡，且能ping通192.168.100.21
+可以看到 pod 有两张网卡，且能 ping 通 192.168.100.21
 
+注意：因为是 macvlan 的方式，所以需要配置 vswitch 的网络为混杂模式。另外，pod 无法与所在主机 IP 通信，因为 macvlan 的父设备只负责接收包，而不会处理包。
 
-注意: 因为是macvlan的方式，所以需要配置vswitch的网络为混杂模式。另外，pod无法与所在主机IP通信，因为macvlan的父设备只负责接收包，而不会处理包。
-
-
-
-
-## 参考链接
+## 参考链接：
 
 esxi部署: <https://itsjustbytes.wordpress.com/2020/12/14/kvm-esxi-7-as-a-nested-cluster>
 
@@ -600,4 +601,3 @@ vCenter部署: <https://itsjustbytes.wordpress.com/2021/01/01/install-vcsa-in-ne
 vCenter部署踩坑: <https://segmentfault.com/a/1190000039928498>
 
 tanzu部署: <https://tanzucommunityedition.io/docs/latest/getting-started/>
-

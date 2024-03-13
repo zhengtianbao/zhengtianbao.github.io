@@ -5,19 +5,15 @@ date:  2018-11-20 14:10:37
 categories: Openstack
 ---
 
-## 如何在个人PC上安装一个rocky版本的openstack集群
+最近在做高校大数据实验室项目过程中发现，就场景而言相比较容器老师更容易接受虚拟机的模式，例如想让学生搭个 hadoop 集群，然后在此基础上做实验，就需要有一个直观的网络拓扑让学生理解。kubernetes 只暴露应用入口的设计原则显然不适合。因此，kubernetes on openstack 兴许是个好的解决方案。
 
-### 前言
+openstack 已经发布到 rocky 版本了，各个核心组件已经相当稳定，安装部署也很成熟，这个从我这次安装过程中就能发现，配置文档齐全，小问题 google 一下也能找到类似解决方案。
 
-最近在做高校大数据实验室项目过程中发现，就场景而言相比较容器老师更容易接受虚拟机的模式，例如想让学生搭个hadoop集群，然后在此基础上做实验，就需要有一个直观的网络拓扑让学生理解。kubernetes只暴露应用入口的设计原则显然不适合。因此，kubernetes on openstack 兴许是个好的解决方案。
+这次安装实验性质为主，可用资源有限只有一台个人 PC，all in one 虽然易于部署，但是出于功能演示的考虑（例如虚拟机热迁移），还是需要多节点部署，因此 openstack on vm，嵌套虚拟化试玩一下，本文记录了整个安装过程。
 
-openstack已经发布到rocky版本了，各个核心组件已经相当稳定，安装部署也很成熟，这个从我这次安装过程中就能发现，配置文档齐全，小问题google一下也能找到类似解决方案。
+## 硬件配置
 
-这次安装实验性质为主，可用资源有限只有一台个人PC，all in one虽然易于部署，但是出于功能演示的考虑（例如虚拟机热迁移），还是需要多节点部署，因此，openstack on vm，嵌套虚拟化试玩一下。
-
-### 硬件配置
-
-1台普通家用PC，配置如下：
+1 台普通家用 PC，配置如下：
 
 cpu：Intel(R) Core(TM) i7-7700 CPU @ 3.60GHz
 
@@ -27,33 +23,29 @@ cpu：Intel(R) Core(TM) i7-7700 CPU @ 3.60GHz
 
 网卡：100Mb/s 单网口
 
-### 规划
+## 规划
 
-物理机操作系统安装CentOS7.4，qemu-kvm虚拟化软件，libvirt虚拟化管理软件，搭建网桥br0，将物理网卡enp2s0桥接到br0上，搭建网桥br-internal，模拟二层交换机，openstack 各个节点租户内网走br-ineternal。
+物理机操作系统安装 CentOS7.4，qemu-kvm 虚拟化软件，libvirt 虚拟化管理软件，搭建网桥 br0，将物理网卡 enp2s0 桥接到 br0 上，搭建网桥 br-internal，模拟二层交换机，openstack 各个节点租户内网走 br-ineternal。
 
-创建两台虚拟机，配置为8 vcpus，16G，40G硬盘。安装ubuntu18.04，分别为控制节点以及计算节点。控制节点配置3个网卡：分别为管理网，虚拟机间通信的内网，外网。计算节点配置2个网卡：分别为管理网，虚拟机间通信的内网。
+创建两台虚拟机，配置为 8 vcpus，16G，40G 硬盘。安装 ubuntu18.04，分别为控制节点以及计算节点。控制节点配置 3 个网卡：分别为管理网，虚拟机间通信的内网，外网。计算节点配置 2 个网卡：分别为管理网，虚拟机间通信的内网。
 
-openstack 网络模式选择bridge vlan。存储选择ceph（已有ceph集群）。
+openstack 网络模式选择 bridge vlan。存储选择 ceph（已有ceph集群）。
 
-TODO:
+## 物理机部署
 
-增加网络拓扑图
+### 1. 安装系统
 
-### 物理机部署
+BIOS 中开启 intel CPU 虚拟化支持。
 
-#### 1. 安装系统
+操作系统镜像版本为 `CentOS-7-x86_64-Minimal-1708.iso`。
 
-BIOS中开启intel CPU虚拟化支持。
+安装完毕后关闭 selinux，删除 swap 分区，重启。
 
-操作系统镜像版本为 `CentOS-7-x86_64-Minimal-1708.iso` 。
+修改网卡配置文件，桥接物理网卡 enp2s0 到 br0，以及创建网卡 br-internal，类型为 bridge。
 
-安装完毕后关闭selinux，删除swap分区，重启。
+### 2. 升级内核
 
-修改网卡配置文件，桥接物理网卡enp2s0到br0 ，以及创建网卡br-internal，类型为bridge。
-
-#### 2. 升级内核
-
-安装完毕后默认内核版本为 `3.10.0-693.el7.x86_64` ，删除openstack嵌套虚拟机时会产生虚拟机hang住的现象，详见下文问题1。因此需要升级到最新内核。
+安装完毕后默认内核版本为 `3.10.0-693.el7.x86_64`，删除 openstack 嵌套虚拟机时会产生虚拟机 hang 住的现象，详见下文问题 1。因此需要升级到最新内核。
 
 ```
 # 载入公钥
@@ -74,7 +66,7 @@ yum remove kernel-tools-libs.x86_64 kernel-tools.x86_64
 yum --disablerepo=\* --enablerepo=elrepo-kernel install -y kernel-ml-tools.x86_64
 ```
 
-#### 3. 开启嵌套虚拟化支持
+### 3. 开启嵌套虚拟化支持
 
 ```
 # 查看是否支持嵌套虚拟化 N不支持 Y支持
@@ -92,7 +84,7 @@ modprobe -r kvm_intel
 modprobe -a kvm_intel
 ```
 
-#### 4. 创建openstack虚拟机
+### 4. 创建 openstack 虚拟机
 
 ```
 # 安装qemu-kvm libvirt
@@ -103,10 +95,9 @@ virt-install --name ubuntu18.04 --ram 4096 --disk path=/var/lib/libvirt/images/u
 # 安装完毕后clone虚拟机
 virt-clone --original ubuntu18.04 --name controller --file /var/lib/libvirt/images/controller.img
 virt-clone --original ubuntu18.04 --name computer --file /var/lib/libvirt/images/computer.img
-
 ```
 
-编辑controller虚拟机配置
+#### 编辑 controller 虚拟机配置
 
 ```
 virsh edit controller
@@ -271,7 +262,7 @@ virsh edit controller
 </domain>
 ```
 
-编辑computer
+#### 编辑 computer 虚拟机配置
 
 ```
 virsh edit computer
@@ -422,27 +413,26 @@ virsh edit computer
 </domain>
 ```
 
-注意CPU中需要配置vmx以支持嵌套虚拟化。
+注意：CPU 中需要配置 vmx 以支持嵌套虚拟化。
+
+#### 启动虚拟机
 
 ```
-# 启动虚拟机
 virsh start controller
 virsh start computer
 ```
 
-### 控制节点部署
+## 控制节点部署
 
-#### 1. 网络配置
+### 1. 网络配置
 
-ubuntu18.04 改由netplan来管理网络配置
+ubuntu18.04 改由 netplan 来管理网络配置
 
-但是重启后，netplan无法将未配置ip地址的网卡自动设置为up，详见：
+但是重启后，netplan 无法将未配置 ip 地址的网卡自动设置为 up，详见：<https://bugs.launchpad.net/netplan/+bug/1763608>
 
-https://bugs.launchpad.net/netplan/+bug/1763608
+因此增加一个 workaround 的方法，配置网卡静态 ipv6 的地址
 
-因此增加一个workaround的方法，配置网卡静态ipv6的地址
-
-修改配置文件`/etc/netplan/50-cloud-init.yaml`
+修改配置文件 `/etc/netplan/50-cloud-init.yaml`
 
 ```yaml
 network:
@@ -470,7 +460,7 @@ network:
 netplan apply
 ```
 
-#### 2. 安装devstack
+### 2. 安装 devstack
 
 ```
 # 创建stack用户
@@ -481,7 +471,7 @@ su - stack
 git clone https://git.openstack.org/openstack-dev/devstack -b stable/rocky
 ```
 
-#### 3. 配置pip源
+### 3. 配置 pip 源
 
 ```
 mkdir /root/.pip
@@ -499,7 +489,7 @@ cp /root/.pip/pip.conf /opt/stack/.pip/pip.conf
 chown -R stack /opt/stack/.pip
 ```
 
-#### 4. 配置local.conf
+### 4. 配置 local.conf
 
 ```
 stack@controller:~/devstack$ cat local.conf |grep -v "^#" |grep -v "^$"
@@ -522,22 +512,19 @@ Q_AGENT=linuxbridge
 ENABLE_TENANT_VLANS=True
 TENANT_VLAN_RANGE=3001:4000
 PHYSICAL_NETWORK=default
-
 ```
 
-#### 5. 安装服务
+### 5. 安装服务
 
 ```
 ./stack.sh
 ```
 
+## 计算节点部署
 
+### 1. 网络配置
 
-### 计算节点部署
-
-#### 1. 网络配置
-
-修改配置文件`/etc/netplan/50-cloud-init.yaml`
+修改配置文件 `/etc/netplan/50-cloud-init.yaml`
 
 ```yaml
 network:
@@ -562,7 +549,7 @@ network:
 netplan apply
 ```
 
-#### 2. 安装devstack
+### 2. 安装 devstack
 
 ```
 # 创建stack用户
@@ -573,7 +560,7 @@ su - stack
 git clone https://git.openstack.org/openstack-dev/devstack -b stable/rocky
 ```
 
-#### 3. 配置pip源
+### 3. 配置pip源
 
 ```
 mkdir /root/.pip
@@ -591,7 +578,7 @@ cp /root/.pip/pip.conf /opt/stack/.pip/pip.conf
 chown -R stack /opt/stack/.pip
 ```
 
-#### 4. 配置loal.conf
+### 4. 配置 loal.conf
 
 ```
 stack@computer:~/devstack$ cat local.conf |grep -v "^#" |grep -v "^$"
@@ -626,19 +613,17 @@ NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
 SPICE_REPO=http://git.trystack.cn/git/spice/spice-html5.git
 ```
 
-#### 4. 安装服务
+### 4. 安装服务
 
 ```
 ./stack.sh
 ```
 
+**注意：安装完毕后登录 dashboard 清理默认创建的网络，存储，镜像等资源。**
 
+## 配置 neutron 服务
 
-**注意：安装完毕后登录dashboard清理默认创建的网络，存储，镜像等资源。**
-
-### 配置neutron服务
-
-这里neutron二层采用linuxbridge + vlan 模式，linuxbridge相对openvswitch成熟简单，鉴于测试环境用vlan足以子网数量，同时避免了vxlan的性能损耗。
+这里 neutron 二层采用 linuxbridge + vlan 模式，linuxbridge相对 openvswitch 成熟简单，鉴于测试环境用 vlan 的子网数量足矣，同时避免了 vxlan 的性能损耗。
 
 计算节点 & 控制节点
 
@@ -679,13 +664,11 @@ physical_interface_mappings = default:ens7,external:ens8
 systemctl restart devstack@q-*
 ```
 
+## ceph 集成（可选）
 
+默认 devstack 安装的是 lvm 本地存储，考虑到实际生产环境中大多选用 ceph 作为统一存储，因此配置 cinder volume-type 为 ceph。
 
-### ceph集成（可选）
-
-默认devstack安装的是lvm本地存储，考虑到实际生产环境中大多选用ceph作为统一存储，因此配置cinder volume-type为ceph。
-
-#### 1. ceph配置
+### 1. ceph 配置
 
 ```
 # 创建pool
@@ -702,9 +685,9 @@ rbd pool init vms
 rbd pool init images
 ```
 
-复制/etc/ceph/ceph.conf 到控制节点
+复制 /etc/ceph/ceph.conf 到控制节点
 
-#### 2. cinder 配置
+### 2. cinder 配置
 
 控制节点
 
@@ -725,10 +708,9 @@ rbd_flatten_volume_from_snapshot = false
 rbd_max_clone_depth = 5
 rbd_store_chunk_size = 4
 rados_connect_timeout = -1
-
 ```
 
-#### 3. nova 配置
+### 3. nova 配置
 
 控制节点 & 计算节点
 
@@ -751,7 +733,7 @@ live_migration_flag="VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRA
 
 ```
 
-#### 4. glance 配置
+### 4. glance 配置
 
 控制节点
 
@@ -777,29 +759,28 @@ show_multiple_locations = True
 show_image_direct_url = True
 ```
 
-glance镜像需要重传，为了发挥ceph存储cow优势，秒级创建虚拟机，需要将镜像格式转换为raw格式。
+glance 镜像需要重传，为了发挥 ceph 存储 cow 优势，秒级创建虚拟机，需要将镜像格式转换为 raw 格式。
 
 ```
 qemu-img convert -f {source-format} -O {output-format} {source-filename} {output-filename}
 qemu-img convert -f qcow2 -O raw cirros-0.4.0-x86_64-disk.img cirros-0.4.0-x86_64-disk.raw
 ```
 
+## 安装过程中遇到的问题
 
-### 安装过程中遇到的问题
+### 1. 删除虚拟机导致宿主机 hang 住
 
-#### 1. 删除虚拟机导致宿主机hang住
+假设实际的物理 PC 为 layer1，物理 PC 中创建的虚拟机为 layer2，layer2 虚拟机中再建的虚拟机为 layer3。
 
-假设实际的物理PC为layer1 ，物理PC中创建的虚拟机为layer2 ，layer2虚拟机中再建的虚拟机为layer3。
+表现为 layer2 删除 layer3 虚拟机时将会导致 layer2 虚拟机 hang 住，只能在 layer1 强制 destroy layer2 虚拟机再开机。
 
-表现为layer2删除layer3虚拟机时将会导致layer2虚拟机hang住，只能在layer1强制destroy layer2虚拟机再开机。
-
-查看layer3虚拟机日志
+查看 layer3 虚拟机日志：
 
 ```
 2018-11-16T08:51:10.701589Z qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.80000001H:ECX.svm [bit 2]
 ```
 
-猜测是CPU不支持该特性，于是升级内核版本
+猜测是 CPU 不支持该特性，于是升级内核版本
 
 升级内核前：
 
@@ -813,29 +794,29 @@ flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov 
 flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault invpcid_single pti tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp
 ```
 
-显然多了很多新的flags，例如 `cpuid_fault`
+显然多了很多新的 flags，例如 `cpuid_fault`
 
-#### 2. 虚拟机无法调度到计算节点 
+### 2. 虚拟机无法调度到计算节点 
 
-新增加的计算节点没有加入到nova cell中，需要执行以下命令
+新增加的计算节点没有加入到 nova cell 中，需要执行以下命令
 
 ```
 nova-manage cell_v2 discover_hosts
 ```
 
-#### 3. 虚拟机热迁移失败
+### 3. 虚拟机热迁移失败
 
-##### 3.1 主机域名解析
+需要配置主机域名解析：
 
-nova-cpu.conf中定义了
+因为 nova-cpu.conf 中定义了
 
 ```
 live_migration_uri = qemu+tcp://root@%s/system
 ```
 
-通过域名进行通信，需要各个节点配置DNS server
+通过域名进行通信，需要各个节点配置 DNS server
 
-##### 3.2 libvirt 开启tcp端口
+同时 libvirt 需要开启 tcp 端口：
 
 /etc/default/libvirtd
 
@@ -856,6 +837,3 @@ auth_unix_ro = "none"
 auth_unix_rw = "none"
 auth_tcp = "none"
 ```
-
-
-

@@ -5,11 +5,9 @@ date:   2015-08-13 15:15:47
 categories: Ceph
 ---
 
+在一次 ceph 环境的部署中，由于一台机器主板坏了，导致 ceph 集群状态异常，在恢复过程中意外的发现 pool replication size 的问题，这里记录下。
 
-在一次ceph环境的部署中, 由于一台机器主板坏了, 导致ceph集群状态异常, 在恢复过程中意外的发现pool replication size的问题, 这里记录下.
-
-
-下面是模拟的ceph cluster环境:
+下面是模拟的 ceph cluster 环境:
 
 | node   | ip          | server      |
 |--------|-------------|-------------|
@@ -18,9 +16,9 @@ categories: Ceph
 | ceph-3 | 10.160.0.43 | osd.2 mon.2 |
 | cns-5  | 10.160.0.55 | osd.3 osd.4 |
 
-_cns-5_上的_osd.3_和_osd.4_是由一块硬盘分出来的, 用来模拟ssd和sata盘两种类型:
+说明：_cns-5_ 上的 _osd.3_ 和 _osd.4_ 是由一块硬盘分出来的，用来模拟 ssd 和 sata 盘两种类型，步骤如下：
 
-{% highlight text %}
+```
 # parted -a optimal --script /dev/sdb mktable gpt
 # parted -a optimal -s /dev/sdb mkpart ceph-ssd 0% 40%
 # parted -a optimal -s /dev/sdb mkpart ceph-sata 50% 90%
@@ -38,11 +36,11 @@ _cns-5_上的_osd.3_和_osd.4_是由一块硬盘分出来的, 用来模拟ssd和
 # ceph-osd -c /etc/ceph/ceph.conf -i 4 --mkfs --osd-uuid 73503769-ce44-4599-843f-35b07c0820e5
 # /etc/init.d/ceph start osd.3
 # /etc/init.d/ceph start osd.4
-{% endhighlight %}
+```
 
-CRUSHMap:
+CRUSHMap：
 
-{% highlight text %}
+```
 # begin crush map
 tunable choose_local_tries 0
 tunable choose_local_fallback_tries 0
@@ -162,21 +160,21 @@ rule replicated_ruleset {
 }
 
 # end crush map
-{% endhighlight %}
+```
 
-当改变了CRUSHMap, OSD重启后默认不会加入到该location, 需要配置ceph.conf中, 对应的OSD下添加`osd crush location`:
+当改变了 CRUSHMap，OSD 重启后默认不会加入到该 location，需要配置 ceph.conf 中，对应的 OSD 下添加 `osd crush location`：
 
-{% highlight text %}
+```
 [osd.3]
    osd crush location = "root=ssd host=cns-5-ssd"
 
 [osd.4]
    osd crush location = "root=sata host=cns-5-sata"
-{% endhighlight %}
+```
 
-osd tree:
+osd tree：
 
-{% highlight text %}
+```
 [root@cns-5 ~]# ceph osd tree
 # id    weight  type name       up/down reweight
 -8      3       root sata
@@ -192,30 +190,30 @@ osd tree:
 -5      1               host cns-5-ssd
 3       0.04999                 osd.3   up      1
 -1      0       root default
-{% endhighlight %}
+```
 
-创建两个_test-ssd_和_test-sata_两个pool, 分别将数据保存到ssd和sata上:
+创建两个 _test-ssd_ 和 _test-sata_ 两个 pool，分别将数据保存到 ssd 和 sata 上：
 
-{% highlight text %}
+```
 # ceph osd pool create test-sata 256 256 replicated sata
 # ceph osd pool create test-ssd 256 256 replicated ssd
 # ceph osd pool set test-sata crush_ruleset 2
 # ceph osd pool set test-ssd crush_ruleset 1
-{% endhighlight %}
+```
 
-{% highlight text %}
+```
 [root@cns-5 ~]# ceph osd dump |grep test-
 pool 6 'test-ssd' replicated size 2 min_size 1 crush_ruleset 1 object_hash rjenkins pg_num 256 pgp_num 256 last_change 270 flags hashpspool stripe_width 0
 pool 7 'test-sata' replicated size 2 min_size 1 crush_ruleset 2 object_hash rjenkins pg_num 256 pgp_num 256 last_change 298 flags hashpspool stripe_width 0
-{% endhighlight %}
+```
 
-如你所见, 现在_test-ssd_和_test-sata_的_replicated size_都为_2_, _min size_为_1_;
+如你所见，现在 _test-ssd_ 和 _test-sata_ 的 _replicated size_ 都为 _2_，_min size_ 为 _1_
 
-由此可得_test-ssd_中的数据将会在_osd.2_和_osd.3_中各保存一份;
+由此可得 _test-ssd_ 中的数据将会在 _osd.2_ 和 _osd.3_ 中各保存一份
 
-假设_osd.3_ 由于某些原因down了, 由于_min size_为_1_, 因此只要_osd.2_成功写如数据, _test-ssd_ pool依然能够正常对外工作.
+假设 _osd.3_ 由于某些原因 down 了，由于 _min size_ 为 _1_，因此只要 _osd.2_ 成功写入数据，_test-ssd_ pool 依然能够正常对外工作。
 
-{% highlight text %}
+```
 [root@cns-5 ~]# rbd --pool test-ssd ls
 bbb
 vvvv
@@ -251,14 +249,13 @@ test
 vvvv
 www
 xxx
+```
 
-{% endhighlight %}
+结果与猜想的一样，同理，在这种情况下 _test-sata_ 也是一样，这里省略测试结果
 
-结果与猜想的一样, 同理, 在这种情况下_test-sata_也是一样, 这里省略测试结果; 
+当 _test-sata_ 的 _replicated size_ 设置为 _3_，_min size_ 设置为 _1_ 的情况下，按推论应该在 _osd.0_，_osd.1_，_osd.4_ 上都保存一份数据，当挂了一个或者两个 OSD 的时候依然正常工作，然而实际情况却 `hang` 住了！
 
-当_test-sata_的_replicated size_设置为_3_, _min size_设置为_1_的情况下, 按推论应该在_osd.0_, _osd.1_, _osd.4_上都保存一份数据, 当挂了一个或者两个OSD的时候依然正常工作, 然而实际情况却`hang`住了!
-
-{% highlight text %}
+```
 [root@cns-5 ~]# ceph osd pool set test-sata size 3
 set pool 7 size to 3
 [root@cns-5 ~]# ceph osd tree
@@ -293,28 +290,24 @@ set pool 7 size to 2
 [root@cns-5 ~]# rbd --pool test-sata ls
 test
 [root@cns-5 ~]# 
+```
 
-{% endhighlight %}
+我不知道这是什么原因导致的，一个猜测是因为 OSD 数目过少，CRUSH 算法找不到合适的 osd 导致了这种情况？……
 
-我不知道这是什么原因导致的, 一个猜测是因为OSD数目过少, CRUSH算法找不到合适的osd导致了这种情况??...
+## 20150814 记录
 
+找到了问题的原因：是由于在 CRUSHMap 中的 _rule_ 设置的两个属性 `min_size`，`max_size` 导致的。
 
-## 20150814
+- min_size: If a pool makes fewer replicas than this number，CRUSH will *NOT* select this rule.
+- max_size: If a pool makes more replicas than this number，CRUSH will *NOT* select this rule.
 
-找到了问题的原因: 是由于在CRUSHMap中的_rule_设置的两个属性`min_size`, `max_size`导致的.
+也就是说当某个 pool 的 _replicated size_ 只有在区间 [min_size，max_size] 之间时，CRUSH 算法才会选择这个 rule。
 
-- min_size: If a pool makes fewer replicas than this number, CRUSH will *NOT* select this rule.
-- max_size: If a pool makes more replicas than this number, CRUSH will *NOT* select this rule.
+开始误以为这两个参数和 pool 下的 _replicated size_，_min size_ 是一个意思，作为 default 值配置，才产生了这个错误。
 
-也就是说当某个pool的_replicated size_只有在区间[min_size, max_size]之间时, CRUSH算法才会选择这个rule.
+最后建议 rule 的 `min_size` 设为 _1_，`max_size` 设为 _10_。
 
-开始误以为这两个参数和pool下的_replicated size_, _min size_是一个意思, 作为default值配置, 才产生了这个错误.
-
-最后建议rule的`min_size`设为_1_, `max_size`设为_10_.
-
-
-
-## 参考链接:
+## 参考链接：
 
 <http://ceph.com/docs/master/rados/operations/pools/#set-the-number-of-object-replicas>
 

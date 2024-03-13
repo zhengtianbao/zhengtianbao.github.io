@@ -9,8 +9,8 @@ categories: Python
 
 现有的系统架构如下：
 
-* 后端系统A：提供 WSGI 的 API 接口，通过消息队列对外发送消息或者接受其他组件的消息，执行周期任务等
-* 前端系统B：调用后端系统A的 API 接口，接收后端系统A发送的消息进行处理，UI 展示层
+- 后端系统A：提供 WSGI 的 API 接口，通过消息队列对外发送消息或者接受其他组件的消息，执行周期任务等
+- 前端系统B：调用后端系统A的 API 接口，接收后端系统A发送的消息进行处理，UI 展示层
 
 支付宝作为一个第三方应用，设计上只能与前端B产生交互，支付宝的支付流程如下：
 
@@ -21,9 +21,9 @@ categories: Python
 
 好了，我要实现的 fakepay 需要满足的就是 2，3 两步：
 
-* 提供一个 API 地址，在收到前端系统B第 2 步提交支付请求的时候模拟已经付款成功，然后发送通知（POST）给 notify_url（这个 URL 肯定是前端B的一个接口）
+- 提供一个 API 地址，在收到前端系统B第 2 步提交支付请求的时候模拟已经付款成功，然后发送通知（POST）给 notify_url（这个 URL 肯定是前端B的一个接口）
 
-功能很简单，看样子也用不了几行代码，于是我在后端系统A现有的 API 接口上新增了一个 */fakepay* 的 API 接口，大概的实现如下:
+功能很简单，看样子也用不了几行代码，于是我在后端系统A现有的 API 接口上新增了一个 **/fakepay** 的 API 接口，大概的实现如下:
 
 ```python
 def fakepay():
@@ -37,7 +37,7 @@ def fakepay():
     return True
 ```
 
-注意 `do_request`，它会阻塞直到整个 HTTP 请求正确结束，一个请求总是会阻塞直到收到 *response*。
+注意 `do_request`，它会阻塞直到整个 HTTP 请求正确结束，一个请求总是会阻塞直到收到 **response**。
 
 考虑下整个流程:
 
@@ -63,7 +63,7 @@ def fakepay():
     return True
 ```
 
-就像上面这样采用异步的方式，避免了 fakepay 的等待。但是，这与我概念中的 server 为每一条 HTTP 连接都会分配一个线程的概念不符，因为即使在 fakepay 的线程中阻塞住了，server 应该还是能够处理其他 API 请求的. 然而坑爹的就是我们的 *application* 跑在 wsgiref 的 WSGIServer 上。
+就像上面这样采用异步的方式，避免了 fakepay 的等待。但是，这与我概念中的 server 为每一条 HTTP 连接都会分配一个线程的概念不符，因为即使在 fakepay 的线程中阻塞住了，server 应该还是能够处理其他 API 请求的. 然而坑爹的就是我们的 **application** 跑在 wsgiref 的 WSGIServer 上。
 
 研究了下 wsgiref 的源码实现：
 
@@ -86,14 +86,14 @@ TCPServer 里有这样的注释：
     #   this constructor will handle the request all by itself
 ```
 
-假设 `socket` 收到第一个请求（*select socketfd*），进行请求一的 `process_request` 需要 10 秒，由于它是与 *server* 处在同一线程，如果当在第 2 秒收到第二个请求时，*server* 会阻塞在处理第一个请求处，因此无法及时处理第二个请求（这个时候第一个请求与第二个请求的 *client* 端都在等待 *server* 的响应），10 秒后第一个请求处理完毕，*server* 线程继续执行到 *select socketfd*，获取到第二个请求，再进行 `process_request`，处理第二个请求，完毕后继续等待新连接请求（*select socketfd*）。
+假设 `socket` 收到第一个请求（**select socketfd**），进行请求一的 `process_request` 需要 10 秒，由于它是与 **server** 处在同一线程，如果当在第 2 秒收到第二个请求时，**server** 会阻塞在处理第一个请求处，因此无法及时处理第二个请求（这个时候第一个请求与第二个请求的 **client** 端都在等待 **server** 的响应），10 秒后第一个请求处理完毕，**server** 线程继续执行到 **select socketfd**，获取到第二个请求，再进行 `process_request`，处理第二个请求，完毕后继续等待新连接请求（**select socketfd**）。
 
 也就是说通过 `select` `accept` 到一个http连接后会交由 `process_request` 处理，例如上面的 `fakepay`，如果在 `process_request` 过程中阻塞了就不会
 到下一个 `select` 了，所以 TCPServer 的 `process_request` 必须是 **non-blocking** 的。
 
 由此 `select()->get_request()->process_request()` 所谓的非阻塞，是指在 `select` 阶段的 I/O 多路复用，但是在 `process_request` 阶段要是 block 住了，就回不到 `select` 了。所以，如果 `process_request` 是需要花费一定时间的 block 任务，就要放到子进程或者线程里去处理，不要影响主进程的执行。
 
-因为 wsgiref.WSGIServer 继承自 SocketServer.TCPServer，因此它是单线程执行的，*wsgi application* 必须是非阻塞的，只有处理完一条请求才能执行下一条。
+因为 wsgiref.WSGIServer 继承自 SocketServer.TCPServer，因此它是单线程执行的，**wsgi application** 必须是非阻塞的，只有处理完一条请求才能执行下一条。
 
 所幸 SocketServer 中提供了 ThreadingTCPServer，在 `process_request` 时采用 threading，这样每个请求都开了个独立的线程就不会阻塞了。
 

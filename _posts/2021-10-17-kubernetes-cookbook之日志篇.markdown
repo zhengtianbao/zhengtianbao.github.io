@@ -7,15 +7,15 @@ categories: Kubernetes
 
 ![log](/images/log.jpeg)
 
-开始新项目之前我总是会习惯先设计好日志模块，这样可以避免在开发过程中代码行中充斥着大量且临时的`print`输出语句。kubernetes的日志模块是C++版本 [google/glog](https://github.com/google/glog) 的Go版本实现，基本实现了原生glog的日志格式，早期版本中是[golang/glog](https://github.com/golang/glog)，目前已经迁移到[klog](https://github.com/kubernetes/klog) 作为日志库，被替换的原因总结下来有以下几条：
+开始新项目之前我总是会习惯先设计好日志模块，这样可以避免在开发过程中代码行中充斥着大量且临时的 `print` 输出语句。kubernetes 的日志模块是 C++ 版本 [google/glog](https://github.com/google/glog) 的 Go 语言实现，基本实现了原生 glog 的日志格式，早期版本中是 [golang/glog](https://github.com/golang/glog)，目前已经迁移到 [klog](https://github.com/kubernetes/klog) 作为日志库，被替换的原因总结下来有以下几条：
 
-- glog 默认会在 `init` 方法中注册 `flag` 参数，所以当程序导入glog库后执行 `flag.Parse()` 会将glog的参数默认导入
-- glog 默认将日志写入到文件中，如果没有权限创建日志文件就会报错退出，这在readonly的容器环境中容易出错
-- glog没有 **logrotate** 机制
+- glog 默认会在 `init` 方法中注册 `flag` 参数，所以当程序导入glog 库后执行 `flag.Parse()` 会将 glog 的参数默认导入
+- glog 默认将日志写入到文件中，如果没有权限创建日志文件就会报错退出，这在 readonly 的容器环境中容易出错
+- glog 没有 **logrotate** 机制
 
 ## klog
 
-klog的使用非常简单，举个例子说明：
+klog 的使用非常简单，举个例子说明：
 
 t.go
 
@@ -103,11 +103,11 @@ created by k8s.io/klog/v2.init.0
 exit status 255
 ```
 
-klog提供了四个级别的日志FATAL, ERROR, WARNING, INFO，同时支持`V()`方法定义日志level，例如可以通过命令行参数`-v 5`打印输出level 5及以下的日志信息
+klog 提供了四个级别的日志 FATAL, ERROR, WARNING, INFO，同时支持 `V()` 方法定义日志 level，例如可以通过命令行参数 `-v 5` 打印输出 level 5 及以下的日志信息。
 
-## kubernetes中的用法
+## kubernetes 中的用法
 
-kubernetes又将日志相关的操作放到了`k8s.io/component-base/logs`库里面：
+kubernetes 又将日志相关的操作放到了 `k8s.io/component-base/logs` 库里面：
 
 cmd/kubelet/kubelet.go
 
@@ -139,7 +139,7 @@ func main() {
 }
 ```
 
-其它的可以先不管，日志初始化主要是`logs.InitLogs()`
+其它的可以先不管，日志初始化主要是 `logs.InitLogs()`
 
 staging/src/k8s.io/component-base/logs/logs.go
 
@@ -162,7 +162,7 @@ func InitLogs() {
 }
 ```
 
-将标准库`log`的输出交给`KlogWriter`，其`Write()`方法简单调用了`klog.InfoDepth()`输出日志
+将标准库 `log` 的输出交给 `KlogWriter`，其 `Write()` 方法简单调用了 `klog.InfoDepth()` 输出日志
 
 ```go
 func init() {
@@ -170,11 +170,11 @@ func init() {
 }
 ```
 
-同时`init()`方法在包导入的时候执行，加载日志相关的命令行参数。
+同时 `init()` 方法在包导入的时候执行，加载日志相关的命令行参数。
 
-## 继续canoe项目
+## 继续 canoe 项目
 
-在上篇的基础上增加日志模块，加在`pkg/component-base/logs`路径下：
+在上篇的基础上增加日志模块，加在 `pkg/component-base/logs` 路径下：
 
 ```go
 package logs
@@ -220,7 +220,7 @@ func FlushLogs() {
 }
 ```
 
-修改`cmd/server.go`，简单测试输出**hello world**
+修改 `cmd/server.go`，简单测试输出 **hello world**
 
 ```go
 package main

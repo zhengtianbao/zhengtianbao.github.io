@@ -9,10 +9,6 @@ categories: Ceph Cinder
 
 ## 服务节点说明
 
-- 为不同虚机分配不同类型的云硬盘，容量型（SATA）和性能型（SSD）
-- ceph 设置不同 pool 分配到对应 osd 硬盘的规则
-- cinder 设置 multi-backend 支持
-
 | hostname | IP         | volume-type | services     |
 |----------|------------|-------------|--------------|
 | ceph-1   | 10.180.4.1 | SSD         | mon.0，osd.0 |
@@ -20,6 +16,11 @@ categories: Ceph Cinder
 | ceph-3   | 10.180.4.3 | SATA        | mon.2，osd.2 |
 | ceph-4   | 10.180.4.4 | SATA        | osd.3        |
 
+节点说明：
+
+- 为不同虚机分配不同类型的云硬盘，容量型（SATA）和性能型（SSD）
+- ceph 设置不同 pool 分配到对应 osd 硬盘的规则
+- cinder 设置 multi-backend 支持
 
 ## 修改CRUSHMap
 
@@ -376,6 +377,6 @@ osd journal = /var/lib/ceph/osd/ceph-$id/journal
 osd journal size = {2 * (expected throughput * filestore max sync interval)}
 ```
 
-## 参考链接
+## 参考链接：
 
 <http://blog.csdn.net/juvxiao/article/details/20536117>

@@ -5,7 +5,9 @@ date:  2019-02-13 14:37:21
 categories: Kickstart
 ---
 
-## kickstart PXE部署CentOS7-Minimal
+本文记录了如何使用kickstart PXE批量部署服务器。
+
+## 安装步骤
 
 ### 1. 配置dnsmasq
 
@@ -35,7 +37,7 @@ tftp-root=/var/lib/tftpboot
 conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
 ```
 
-参数说明:
+参数说明：
 
 ```
 interface – 服务器需要监听并提供服务的网络接口。
@@ -54,7 +56,7 @@ enable-tftp – 启用内建TFTP服务器。
 tftp-root – 使用/var/lib/tftpboot——所有网络启动文件所在位置。
 ```
 
-### 2. 安装syslinux启动加载器
+### 2. 安装 syslinux 启动加载器
 
 ```
 yum install syslinux
@@ -92,7 +94,7 @@ label 4
 menu label ^4) Boot from local drive
 ```
 
-### 3. 添加镜像到PXE服务器
+### 3. 添加镜像到 PXE 服务器
 
 ```
 mount -o loop CentOS-7-x86_64-Minimal-1708.iso /mnt/
@@ -101,7 +103,7 @@ cp /mnt/images/pxeboot/vmlinuz  /var/lib/tftpboot/centos7
 cp /mnt/images/pxeboot/initrd.img  /var/lib/tftpboot/centos7
 ```
 
-### 4. 创建ftp服务器作为安装源
+### 4. 创建 ftp 服务器作为安装源
 
 ```
 yum install vsftpd
@@ -109,7 +111,7 @@ cp -r /mnt/*  /var/ftp/pub/
 chmod -R 755 /var/ftp/pub
 ```
 
-### 5. 编写kickstart文件
+### 5. 编写 kickstart 文件
 
 /var/ftp/pub/centos7-ks.cfg
 
@@ -174,7 +176,7 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 
 磁盘分区
 
-`boot`分区 1G, `swap`分区 4G, 剩余空间都划分给`/`分区
+`boot` 分区 1G，`swap` 分区 4G，剩余空间都划分给 `/` 分区
 
 
 ### 6. 启动服务
@@ -192,11 +194,8 @@ firewall-cmd --add-port=4011/udp --permanent
 firewall-cmd --reload
 ```
 
-
-## 参考链接:
+## 参考链接：
 
 [安装PXE引导](https://linux.cn/article-4902-1.html#3_1878)
 
 [使用Kickstart实现CentOS自动化安装](http://debugo.com/kickstart-install-centos/)
-
-

@@ -7,16 +7,13 @@ categories: Kubernetes
 
 ![go](/images/go.jpeg)
 
-写在前面：
-
-本系列是在阅读kubernetes源码过程中逐渐整理的一些值得借鉴的编程范式(recipe)，汇集起来也就有了这个**cookbook**，所以内容展示的更多的可能是code snippet，而不是How to use Kubernetes。
-
+写在前面：本系列是在阅读 kubernetes 源码过程中逐渐整理的一些值得借鉴的编程范式（recipe），汇集起来也就有了这个 **cookbook**，所以内容展示的更多的可能是 code snippet，而不是 How to use Kubernetes。
 
 ## Kubernetes Project Layout
 
-Go语言社区提供了一套标准的工程目录结构方案，详细参考 <https://github.com/golang-standards/project-layout>
+Go 语言社区提供了一套标准的工程目录结构方案，详细参考：<https://github.com/golang-standards/project-layout>
 
-Kubernetes项目结构也是逐步迁移符合至社区标准，目录结构说明如下所示：
+Kubernetes 项目结构也是逐步迁移符合至社区标准，目录结构说明如下所示：
 
 |目录|说明|
 |:---- | :---- |
@@ -34,7 +31,7 @@ Kubernetes项目结构也是逐步迁移符合至社区标准，目录结构说�
 |third_party/|第三方工具，代码|
 |vendor/|依赖的代码库|
 
-假设我想新建一个kubernetes风格的项目暂时命名为canoe吧，它是一个简单的http server，启动的时候可以接收参数指定绑定的端口号，那么就先生成以下目录文件：
+假设我想新建一个 kubernetes 风格的项目暂时命名为 canoe 吧，它是一个简单的 http server，启动的时候可以接收参数指定绑定的端口号，那么就先生成以下目录文件：
 
 ```
 ➜  canoe tree
@@ -57,6 +54,4 @@ Kubernetes项目结构也是逐步迁移符合至社区标准，目录结构说�
 
 ```
 
-这样就初始化了一个只有骨架(skeleton)的工程，后续将逐步填充。
-
-
+这样就初始化了一个只有骨架（skeleton）的工程，后续将逐步填充。

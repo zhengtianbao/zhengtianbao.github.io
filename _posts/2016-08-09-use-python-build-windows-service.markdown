@@ -6,16 +6,14 @@ categories: Python
 ---
 
 
-起因是想写一个脚本在windows虚拟机启动的时候对SQLServer服务进行一些初始化的操作, 如修改用户密码, 修改配置之类的.
-于是写了一个PowerShell脚本去做这些事情, 同时修改注册表设为自启动. 
-但是Windows实际情况却和CentOS下的/etc/rc.d/rc.local启动脚本不太一样, 关键的区别就在于Windows需要等用户登录以后才回执行这个脚本而linux则是先执行完rc.local的内容后才加载login界面.
-因此, 用python写个Service跟随Windows系统启动来做这些操作, 同时也借此学习了下window的服务.
+起因是想写一个脚本在 Windows 虚拟机启动的时候对 SQLServer 服务进行一些初始化的操作，如修改用户密码，修改配置之类的。
+于是写了一个 PowerShell 脚本去做这些事情，同时修改注册表设为自启动。
+但是 Windows 实际情况却和 CentOS下 的 /etc/rc.d/rc.local 启动脚本不太一样，关键的区别就在于 Windows 需要等用户登录以后才会执行这个脚本而 linux 则是先执行完 rc.local 的内容后才加载 login 界面。
+因此，用 python 写个 Service 跟随 Windows 系统启动来做这些操作，同时也借此学习了下 Windows 的服务。
 
+代码很简单，用现成的 pywin32 包：
 
-代码很简单, 用现成的pywin32包:
-
-{% highlight python %}
-
+```python
 import win32serviceutil   
 import win32service   
 import win32event   
@@ -29,9 +27,9 @@ class PythonService(win32serviceutil.ServiceFramework):
     # 服务描述  
     _svc_description_ = "Python service demo."  
   
-    def __init__(self, args):   
-        win32serviceutil.ServiceFramework.__init__(self, args)   
-        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)  
+    def __init__(self，args):   
+        win32serviceutil.ServiceFramework.__init__(self，args)   
+        self.hWaitStop = win32event.CreateEvent(None，0，0，None)  
         self.logger = self._getLogger()  
         self.isAlive = True  
           
@@ -44,7 +42,7 @@ class PythonService(win32serviceutil.ServiceFramework):
           
         this_file = inspect.getfile(inspect.currentframe())  
         dirpath = os.path.abspath(os.path.dirname(this_file))  
-        handler = logging.FileHandler(os.path.join(dirpath, "service.log"))  
+        handler = logging.FileHandler(os.path.join(dirpath，"service.log"))  
           
         formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')  
         handler.setFormatter(formatter)  
@@ -62,7 +60,7 @@ class PythonService(win32serviceutil.ServiceFramework):
             self.setup_sqlserver()
             time.sleep(60)
         # 等待服务被停止   
-        #win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)   
+        #win32event.WaitForSingleObject(self.hWaitStop，win32event.INFINITE)   
 
     def setup_sqlserver(self):
         pass
@@ -77,32 +75,29 @@ class PythonService(win32serviceutil.ServiceFramework):
   
 if __name__=='__main__':   
     win32serviceutil.HandleCommandLine(PythonService)  
+```
 
-{% endhighlight %}
+安装服务：
 
-安装服务:
-
-{% highlight text %}
+```
 # 加参数--start auto设为自启动
 python PythonService.py --startup auto install 
-{% endhighlight %}
+```
 
-Tips:
+注意：
 
-- 最好将服务设置为延迟启动:
+1. 最好将服务设置为延迟启动：
 
 ![延迟启动](/images/sqlserver.png)
 
-- 在注册表里设置依赖与SQLServer服务:
+2. 在注册表里设置依赖与SQLServer服务：
 
 ![注册表](/images/reg.png)
 
 ![依赖关系](/images/sqlserver2.png)
 
-
-
-## 参考链接
+## 参考链接：
 
 <http://blog.csdn.net/ghostfromheaven/article/details/8604738>
-<http://www.cnblogs.com/xienb/archive/2012/07/26/2610643.html>
 
+<http://www.cnblogs.com/xienb/archive/2012/07/26/2610643.html>

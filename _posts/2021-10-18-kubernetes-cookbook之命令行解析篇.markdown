@@ -7,11 +7,11 @@ categories: Kubernetes
 
 ![log](/images/flag.jpeg)
 
-命令行解析几乎是所有程序的标准功能，go语言标准库中提供了`flag`模块，而kubernetes中则使用了`pflag`和`cobra`来构建
+命令行解析几乎是所有程序的标准功能，go 语言标准库中提供了 `flag` 模块，而 kubernetes 中则使用了 `pflag` 和 `cobra` 来构建。
 
-## flag标准库
+## flag 标准库
 
-`flag` 包内置了常用的几种参数类型：`string` ,  `int` , `bool` , `time.Duration` ，如果需要自定义类型，例如以`,` 分割的字符串数组，就需要实现 `flag.Value` 接口。
+`flag` 包内置了常用的几种参数类型：`string`，`int`，`bool`，`time.Duration`，如果需要自定义类型，例如以 `,` 分割的字符串数组，就需要实现 `flag.Value` 接口。
 
 ### 基本类型
 
@@ -150,13 +150,13 @@ func main() {
 
 ### 自定义参数类型
 
-kubernetes proxy命令行参数中有个 `etcd_servers` 的选项，因为 `etcd` 以集群方式部署，使用的时候可能会如下：
+kubernetes proxy 命令行参数中有个 `etcd_servers` 的选项，因为 `etcd` 以集群方式部署，使用的时候可能会如下：
 
 ```
 $ proxy -etcd_servers http://192.168.100.10:4001,http://192.168.100.11:4001,http://192.168.100.12:4001
 ```
 
-很显然 `etcd_servers` 是 `net/url` 包里面 `url.URL` 类型组成的数组，不在 `flag` 包默认支持的类型。
+很显然 `etcd_servers` 是 `net/url` 包里面 `url.URL` 类型组成的数组，不在 `flag` 包默认支持的类型范围内。
 
 cmd/proxy/proxy.go#L32
 
@@ -177,7 +177,7 @@ func main() {
 }
 ```
 
-`flag.Var` 函数的第一个参数是 `flag.Value` 接口类型，需要实现 `String() string`, `Set(string) error` 两个方法。
+`flag.Var` 函数的第一个参数是 `flag.Value` 接口类型，需要实现 `String() string`，`Set(string) error` 两个方法。
 
 go/src/flag/flag.go
 
@@ -228,7 +228,7 @@ func (sl *StringList) Set(value string) error {
 }
 ```
 
-`String()` 将 struct转化为string， `Set(string)` 将会在 `flag.Parse()` 方法执行时被调用，`StringList` 实现了接口 `flag.Value`，将参数根据 `,` 分割后，赋值给 `etcdServerList`。
+`String()` 将 struct 转化为 string，`Set(string)` 将会在 `flag.Parse()` 方法执行时被调用，`StringList` 实现了接口 `flag.Value`，将参数根据 `,` 分割后，赋值给 `etcdServerList`。
 
 结合起来的例子：custom_flag.go
 
@@ -281,7 +281,7 @@ etcd server 2: http://192.168.100.12:4001
 
 ## pflag
 
-[pflag](https://github.com/spf13/pflag) 在flag的基础上补充了符合posix标准的命令行解析规范，下面简单就kubernetes用到的功能来举例说明
+[pflag](https://github.com/spf13/pflag) 在flag的基础上补充了符合 posix 标准的命令行解析规范，下面简单就 kubernetes 用到的功能来举例说明。
 
 
 ### 标记参数废弃
@@ -319,7 +319,7 @@ func (f *KubeletFlags) AddFlags(mainfs *pflag.FlagSet) {
 
 ### 参数重写
 
-例如希望参数使用“_”和“-”分割一致，像`--my_flag == --my-flag`:
+例如希望参数使用「_」和「-」分隔符表现一致，像 `--my_flag == --my-flag`：
 
 ```go
 // WordSepNormalizeFunc changes all flags that contain "_" separators
@@ -335,7 +335,7 @@ cleanFlagSet.SetNormalizeFunc(WordSepNormalizeFunc)
 
 ## cobra
 
-[cobra](https://github.com/spf13/cobra)能够快速的创建CLI接口的应用程序，kubernetes的组件都已经迁移到使用该库作为程序的启动入口
+[cobra](https://github.com/spf13/cobra) 能够快速的创建 CLI 接口的应用程序，kubernetes 的组件都已经迁移到使用该库作为程序的启动入口。
 
 cmd/kubelet/kubelet.go
 
@@ -414,9 +414,9 @@ override the hostname; or specific logic for a cloud provider.`,
 }
 ```
 
-`cmd.Run`定义了一个函数用来做命令行注册解析，参数校验等一系列操作，最后调用 `Run(ctx, kubeletServer, kubeletDeps, utilfeature.DefaultFeatureGate)`来真正启动kubelet。`cmd.Run`定义的函数在启动过程中被`command.Execute()`调用。
+`cmd.Run` 定义了一个函数用来做命令行注册解析，参数校验等一系列操作，最后调用 `Run(ctx, kubeletServer, kubeletDeps, utilfeature.DefaultFeatureGate)` 来真正启动 kubelet。`cmd.Run` 定义的函数在启动过程中被 `command.Execute()` 调用。
 
-## 继续canoe项目
+## 继续 canoe 项目
 
 上文已经增加了日志，这次接着增加服务启动方法
 
@@ -672,8 +672,6 @@ I1019 14:12:05.993253  298465 flags.go:32] FLAG: --version="false"
 I1019 14:12:05.993265  298465 flags.go:32] FLAG: --vmodule=""
 hello node2
 
-
 ```
 
-接下来将为canoe项目增加优雅退出处理。
-
+接下来将为 canoe 项目增加优雅退出处理。

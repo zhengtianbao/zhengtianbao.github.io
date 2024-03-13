@@ -1,17 +1,17 @@
 ---
 layout: post
-title: "Greenplum 扩容"
+title: "Add new segment to greenplum cluster"
 date:  2018-06-20 18:09:29
 categories: Greenplum
 ---
 
-在生产环境中，因为数据量的增加，存在动态扩容greenplum存储容量的需求。
+在生产环境中，因为数据量的增加，存在动态扩容 greenplum 存储容量的需求。
 
 纵向扩容指在现有服务器上增加配置，如增加磁盘，增加内存等，因为在集群初始化部署规划中就已经考虑到了服务器各资源的配置，一般而言多用于测试环境。
 
-横向扩容指增加服务器节点，这在分布式存储系统上是通用解决方案，如hdfs，ceph等都能做到横向动态扩容。
+横向扩容指增加服务器节点，这在分布式存储系统上是通用解决方案，如 hdfs，ceph 等都能做到横向动态扩容。
 
-本文续接上文： [greenplum 部署](https://zhengtianbao.com/ansible/greenplum/2018/06/15/ansible-install-greenplum.html) 因此环境与上文保持一致，测试增加一台服务器sdw2作为segment节点，服务器列表如下表：
+本文续接上文：[greenplum 部署](https://zhengtianbao.com/ansible/greenplum/2018/06/15/ansible-install-greenplum.html) 因此环境与上文保持一致，测试增加一台服务器 sdw2 作为segment 节点，服务器列表如下表：
 
 | IP            | hostname  | role           | 数据盘 |
 | ------------- | --------- | -------------- | ------ |
@@ -21,7 +21,7 @@ categories: Greenplum
 | 192.168.1.204 | localhost | dns, ntp       |        |
 | 192.168.1.243 | sdw2      | segment2       | vdb    |
 
-## ansible脚本配置sdw2服务器环境
+## ansible 脚本配置 sdw2 服务器环境
 
 ansible inventory配置：
 
@@ -44,7 +44,7 @@ sdw2
 
 site.yml
 
-```
+```yaml
 - name: configure local DNS server
   hosts: dns
   remote_user: root
@@ -70,11 +70,11 @@ ansible-playbook
 # ansible-playbook -t ntp,dns,greenplum -i inventory site.yml 
 ```
 
-初始化sdw2环境完毕。
+初始化 sdw2 环境完毕。
 
 ## 扩容
 
-登录到master节点
+登录到 master 节点
 
 ```
 ssh root@mdw
@@ -109,9 +109,9 @@ EOF
 [gpadmin@mdw ~]$ gpstate
 ```
 
-### gpexpand文件规则
+## gpexpand 文件规则说明
 
-postgre中查看现有的配置规则：
+postgre 中查看现有的配置规则：
 
 ```
 [gpadmin@mdw ~]$ psql postgres gpadmin
@@ -129,21 +129,21 @@ postgres=# select * from gp_segment_configuration;
     6 |      -1 | m    | m              | s    | u      |  5432 | smdw     | smdw    |                 
 ```
 
-而gpexpand文件每行为： 
+而 gpexpand 文件每行为：
 
 ```
 <hostname>:<address>:<port>:<fselocation>:<dbid>:<content>:<preferred_role>:<replication_port>
 hostname			主机名
 address				类似主机名
-port				segment监听端口
-fselocation			segment data目录,注意是全路径
-dbid				gp集群的唯一ID，可以到gp_segment_configuration中获得，必须顺序累加
-content				可以到gp_segment_configuration中获得，必须顺序累加
-prefered_role		角色(p或m)(primary , mirror)
-replication_port	如果没有mirror则不需要(用于replication的端口)
+port				segment 监听端口
+fselocation			segment data 目录，注意是全路径
+dbid				gp 集群的唯一 ID，可以到gp_segment_configuration 中获得，必须顺序累加
+content				可以到 gp_segment_configuration 中获得，必须顺序累加
+prefered_role		角色（p 或 m）（primary，mirror）
+replication_port	如果没有 mirror 则不需要（用于 replication 的端口）
 ```
 
-### 扩容失败回滚操作
+## 扩容失败回滚操作
 
 ```
 [gpadmin@mdw ~]$ gpstart -R
@@ -151,7 +151,7 @@ replication_port	如果没有mirror则不需要(用于replication的端口)
 [gpadmin@mdw ~]$ gpstart
 ```
 
-## 参考链接
+## 参考链接：
 
 <https://yq.aliyun.com/articles/177>
 

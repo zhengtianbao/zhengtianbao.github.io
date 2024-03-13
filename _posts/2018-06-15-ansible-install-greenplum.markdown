@@ -5,7 +5,7 @@ date:  2018-06-15 16:17:29
 categories: Ansible Greenplum
 ---
 
-greenplum官方提供安装工具，只需要先部署master节点就可以通过gpinstll命令分发到各个segment节点。但是各个节点的系统环境参数调优工作需要提前处理。因此使用ansible提前对各个节点进行预处理。
+greenplum 官方提供安装工具，只需要先部署 master 节点就可以通过 gpseginstall 命令分发到各个 segment 节点，但是各个节点的系统环境参数调优工作需要提前处理，因此使用 ansible 提前对各个节点进行预处理。
 
 ## 节点说明
 
@@ -19,7 +19,7 @@ greenplum官方提供安装工具，只需要先部署master节点就可以通�
 
 ## ansible配置
 
-inventory 配置文件
+inventory 配置文件：
 
 ```
 [ntp]
@@ -76,19 +76,19 @@ address=/sdw1/192.168.1.233
 address=/sdw2/192.168.1.243
 ```
 
-ansible-playbook
+执行 ansible-playbook：
 
-```shell
+```
 # git clone http://git.jfbrother.com/zhengtianbao/jfbigdata-ansible.git jfbigdata-ansible
 # cd jfbigdata-ansible
 # ansible-playbook -t ntp,dns,greenplum -i inventory site.yml 
 ```
 
-至此 ansible预部署完毕
+至此 ansible 预部署完毕。
 
 ## greenplum master节点操作
 
-```shell
+```
 # 添加互信root密码
 [root@mdw ~]# gpssh-exkeys -f /home/gpadmin/all_nodes
 # 测试是否添加成功
@@ -114,10 +114,9 @@ Type "help" for help.
 postgres=# alter user gpadmin encrypted password 'gpadmin';
 ALTER ROLE
 postgres=# \q
-
 ```
 
-至此，greenplum集群搭建完毕
+至此，greenplum集群搭建完毕。
 
 ## 集群运行中增加segment节点
 

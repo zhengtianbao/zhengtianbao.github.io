@@ -5,54 +5,49 @@ date:   2018-07-06 17:23:53
 categories: Spark Hadoop
 ---
 
-最近这段时间补习了下`Spark`相关的知识点，也纠正了之前不少错误的理解，总的来说实践出真理，只有动手才能更好的理解。
+最近这段时间补习了下 `Spark` 相关的知识点，也纠正了之前不少错误的理解，总的来说实践出真理，只有动手才能更好的理解。这篇文章主要记录第一次使用 `spark` 结合 `hadoop` 跑 `python` 程序的过程，算是大数据学习的起点吧。
 
-> Talk is cheap, show me the code.
-
-这篇文章主要记录第一次使用`spark`结合`hadoop`跑`python`程序的过程，算是大数据学习的起点吧。
-
-## Spark的运行模式
+## Spark 的运行模式
 
 官网上已经很详细的介绍了几种模式，我就总结下：
 
-### 1. *Local*
+### 1. Local
 
 由于本地资源有限，用于开发测试用，验证代码。
 
-### 2. *Standalone*
+### 2. Standalone
 
-Spark自身组成的集群，和hdfs一样有master，slave的概念，自己做资源的调度，一般不用于生产环境。
+Spark 自身组成的集群，和 hdfs 一样有 master，slave 的概念，自己做资源的调度，一般不用于生产环境。
 
-### 3. *Mesos*
+### 3. Mesos
 
-运行在 Apache mesos 上，由 mesos 做资源调度，由于Mesos市场占有率不断下滑，不是一个好选择。
+运行在 Apache mesos 上，由 mesos 做资源调度，由于 Mesos 市场占有率不断下滑，不是一个好选择。
 
-### 4. *YARN*
+### 4. YARN
 
 由 Hadoop Yarn 做资源调度，Spark + Hadoop 黄金组合。
 
 ### 5. K8s
 
-运行在kubernates之上，application跑在docker上，_dockerized_ ！ 整个公司服务容器化，计划下一阶段尝试使用。
+运行在 kubernetes 之上，application 跑在 docker 上，_dockerized_！整个公司服务容器化，计划下一阶段尝试使用。
 
-## Spark的Deploy-mode
+## Spark 的 Deploy-mode
 
-关于两种deploy-mode，区别就在与 `Driver Program` 运行的位置，参见下图：
+关于两种 deploy-mode，区别就在与 `Driver Program` 运行的位置，参见下图：
 
-   ![Spark Deploy Mode](/images/spark_deploy_mode.png)
-
+![Spark Deploy Mode](/images/spark_deploy_mode.png)
 
 ### 1. client mode
 
-   `Driver Program`跑在本地，`spark-shell`就是这种模式，能够及时得到`job`的返回结果，使用场景比如说写一个 RESTful 的 webserver，通过API提交job给spark，及时返回运算结果。
+`Driver Program` 跑在本地，`spark-shell` 就是这种模式，能够及时得到 `job` 的返回结果，使用场景比如说写一个 RESTful 的 webserver，通过 API 提交 job 给 spark，及时返回运算结果。
 
 ### 2. cluster mode
 
-   `Driver Program`跑在负责资源管理的节点，使用场景一般为耗时长的任务，因为输出结果client无法直接拿到，只能输出到其他地方，如hdfs。
+`Driver Program` 跑在负责资源管理的节点，使用场景一般为耗时长的任务，因为输出结果 client 无法直接拿到，只能输出到其他地方，如 hdfs。
 
 ## 安装部署
 
-本文使用场景为`Spark on YARN` ，所以部署方式很简单。
+本文使用场景为 `Spark on YARN`，所以部署方式很简单。
 
 ```
 1. 下载解压
@@ -69,9 +64,9 @@ Spark自身组成的集群，和hdfs一样有master，slave的概念，自己做
 
 ## Run！
 
-作为一名pythoner，先跑一个wordcount吧。
+作为一名 pythoner，先跑一个 wordcount 吧。
 
-需求是在`hdfs`上存在一个`test.txt`文件，统计其每个单词的数量，结果导出到`hdfs`的`output.txt`文件中。
+需求是在 `hdfs` 上存在一个 `test.txt` 文件，统计其每个单词的数量，结果导出到 `hdfs` 的 `output.txt` 文件中。
 
 wordcount.py
 
@@ -153,11 +148,6 @@ total 8
 (u'test', 9)
 (u'word', 9)
 (u'apple', 6)
-
 ```
 
-`saveAsTextFile`保存结果是目录，这里做测试以为是文件，所以命名为`output.txt`。
-
-
-
-
+`saveAsTextFile` 保存结果是目录，这里做测试以为是文件，所以命名为 `output.txt`。

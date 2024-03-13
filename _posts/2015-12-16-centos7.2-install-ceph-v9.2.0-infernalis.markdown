@@ -5,14 +5,14 @@ date:   2015-12-16 13:53:20
 categories: Ceph
 ---
 
+本文记录了在 CentOS 7.2 环境下安装 Ceph v9.2.0 的步骤。
 
-### 安装环境
+## 安装环境
 
-+ 3台CentOS7.2虚机 内核号: 3.10.0-327.el7.x86_64
++ 3 台 CentOS 7.2 虚机，内核号：3.10.0-327.el7.x86_64
++ 各分配两块硬盘，/dev/sdb 作 osd，共计 3 个 osd，3 个 mon
 
-+ 各分配两块硬盘, /dev/sdb作osd, 共计3个osd, 3个mon
-
-+ 服务划分如下
+服务划分如下：
 
 | hostname | ip            | servers       |
 |----------|---------------|---------------|
@@ -21,144 +21,142 @@ categories: Ceph
 | ceph-3   | 10.200.175.13 | mon.2 & osd.2 |
 
 
-### 安装步骤
+## 安装步骤
 
-1. 下载rpm包
+### 1. 下载 rpm 包
 
-    <http://download.ceph.com/rpm-infernalis/el7/x86_64/>
+<http://download.ceph.com/rpm-infernalis/el7/x86_64/>
 
-2. 制作本地rpm源
+### 2. 制作本地 rpm 源
 
-    {% highlight text %}
-    # yum install createrepo -y
-    # createrepo -v /root/cephrpm/
-    # cat >> /etc/yum.repos.d/local.repo << EOF
-    [local_server]
-    name = Local Repo
-    baseurl = file:///root/cephrpm/
-    enabled = 1
-    gpgcheck = 0
-    EOF
-    {% endhighlight %}
+```
+# yum install createrepo -y
+# createrepo -v /root/cephrpm/
+# cat >> /etc/yum.repos.d/local.repo << EOF
+[local_server]
+name = Local Repo
+baseurl = file:///root/cephrpm/
+enabled = 1
+gpgcheck = 0
+EOF
+```
 
-3. 安装
+### 3. 安装
 
-    {% highlight text %}
-    # yum clean all
-    # yum install ceph ceph-common -y
-    {% endhighlight %}
+```
+# yum clean all
+# yum install ceph ceph-common -y
+```
 
-4. leveldb
+### 4. leveldb
 
-    {% highlight text %}
-    # wget ftp://rpmfind.net/linux/fedora/linux/releases/22/Everything/x86_64/os/Packages/l/leveldb-1.12.0-6.fc21.x86_64.rpm
-    {% endhighlight %}
+```
+# wget ftp://rpmfind.net/linux/fedora/linux/releases/22/Everything/x86_64/os/Packages/l/leveldb-1.12.0-6.fc21.x86_64.rpm
+```
 
-5. 配置ceph.conf
+### 5. 配置 ceph.conf
 
-    {% highlight text %}
-    # cat >> /etc/ceph/ceph.conf << EOF
-    [global]
-      auth cluster required = none
-      auth service required = none
-      auth client required = none
-      keyring = /etc/ceph/keyring
-      cluster network = 10.200.175.1/23
-      public network = 10.200.175.1/23
-      osd pool default pg num = 1024
-      osd pool default pgp num = 1024
-      osd pool default size = 2
-      fsid = a3972be0-382d-4227-a3d0-c6e98c18b818
+```
+# cat >> /etc/ceph/ceph.conf << EOF
+[global]
+  auth cluster required = none
+  auth service required = none
+  auth client required = none
+  keyring = /etc/ceph/keyring
+  cluster network = 10.200.175.1/23
+  public network = 10.200.175.1/23
+  osd pool default pg num = 1024
+  osd pool default pgp num = 1024
+  osd pool default size = 2
+  fsid = a3972be0-382d-4227-a3d0-c6e98c18b818
 
-    [mon]
-      mon data = /var/lib/ceph/mon/mon.$id
+[mon]
+  mon data = /var/lib/ceph/mon/mon.$id
 
-    [osd]
-      osd journal size = 4096
-      filestore flusher = false
-      osd data = /var/lib/ceph/osd/ceph-$id
-      osd journal = /var/lib/ceph/osd/ceph-$id/journal
-      osd mkfs type = xfs
-      osd mkfs options xfs = -f
-      osd mount options xfs = rw,noatime
-      keyring = /var/lib/ceph/osd/ceph-$id/keyring
+[osd]
+  osd journal size = 4096
+  filestore flusher = false
+  osd data = /var/lib/ceph/osd/ceph-$id
+  osd journal = /var/lib/ceph/osd/ceph-$id/journal
+  osd mkfs type = xfs
+  osd mkfs options xfs = -f
+  osd mount options xfs = rw,noatime
+  keyring = /var/lib/ceph/osd/ceph-$id/keyring
 
-    [mon.0]
-      host = ceph-1
-      mon addr = 10.200.175.11:6789
+[mon.0]
+  host = ceph-1
+  mon addr = 10.200.175.11:6789
 
-    [mon.1]
-      host = ceph-2
-      mon addr = 10.200.175.12:6789
+[mon.1]
+  host = ceph-2
+  mon addr = 10.200.175.12:6789
 
-    [mon.2]
-      host = ceph-3
-      mon addr = 10.200.175.13:6789
+[mon.2]
+  host = ceph-3
+  mon addr = 10.200.175.13:6789
 
-    [osd.0]
-       host = ceph-1
-       devs = /dev/sdb1
-       cluster addr = 10.200.175.11
-       public addr = 10.200.175.11
+[osd.0]
+    host = ceph-1
+    devs = /dev/sdb1
+    cluster addr = 10.200.175.11
+    public addr = 10.200.175.11
 
-    [osd.1]
-       host = ceph-2
-       devs = /dev/sdb1
-       cluster addr = 10.200.175.12
-       public addr = 10.200.175.12
+[osd.1]
+    host = ceph-2
+    devs = /dev/sdb1
+    cluster addr = 10.200.175.12
+    public addr = 10.200.175.12
 
-    [osd.2]
-       host = ceph-3
-       devs = /dev/sdb1
-       cluster addr = 10.200.175.13
-       public addr = 10.200.175.13
+[osd.2]
+    host = ceph-3
+    devs = /dev/sdb1
+    cluster addr = 10.200.175.13
+    public addr = 10.200.175.13
 
-    EOF
-    {% endhighlight %}
+EOF
+```
 
-6. 启动mon
+### 6. 启动 mon
 
-    {% highlight text %}
-    # ceph-mon --mkfs –i 0
-    # ceph-mon -i 0 -c /etc/ceph/ceph.conf
-    {% endhighlight %}
+```
+# ceph-mon --mkfs –i 0
+# ceph-mon -i 0 -c /etc/ceph/ceph.conf
+```
 
-7. 配置osd
+### 7. 配置 osd
 
-    {% highlight text %}
-    # parted -a optimal --script /dev/sdb mktable gpt
-    # parted -a optimal -s /dev/sdb mkpart ceph 0% 100%
-    # mkfs.xfs /dev/sdb1
-    # blkid # get block device id of /dev/sdb1
-    # ceph osd create $BLOCKID
-    # mkdir /var/lib/ceph/osd/ceph-$ID
-    # mount -o rw,noatime,inode64 /dev/sdb1 /var/lib/ceph/osd/ceph-$ID
-    # ceph-osd -c /etc/ceph/ceph.conf -i $ID --mkfs --osd-uuid $BLOCKID
-    {% endhighlight %}
+```
+# parted -a optimal --script /dev/sdb mktable gpt
+# parted -a optimal -s /dev/sdb mkpart ceph 0% 100%
+# mkfs.xfs /dev/sdb1
+# blkid # get block device id of /dev/sdb1
+# ceph osd create $BLOCKID
+# mkdir /var/lib/ceph/osd/ceph-$ID
+# mount -o rw,noatime,inode64 /dev/sdb1 /var/lib/ceph/osd/ceph-$ID
+# ceph-osd -c /etc/ceph/ceph.conf -i $ID --mkfs --osd-uuid $BLOCKID
+```
 
-8. 启动osd
+### 8. 启动 osd
 
-    {% highlight text %}
-    # ceph-osd -c /etc/ceph/ceph.conf -i $ID
-    {% endhighlight %}
+```
+# ceph-osd -c /etc/ceph/ceph.conf -i $ID
+```
 
-9. crushmap
+### 9. crushmap
 
-    {% highlight text %}
-    # ceph osd getcrushmap -o {compiled-crushmap-filename}
-    # crushtool -d {compiled-crushmap-filename} -o {decompiled-crushmap-filename}
-    # edit {decompiled-crushmap-filename}
-    # ...
-    # crushtool -c {decompiled-crush-map-filename} -o {compiled-crush-map-filename}
-    # ceph osd setcrushmap -i  {compiled-crushmap-filename}
-    {% endhighlight %}
+```
+# ceph osd getcrushmap -o {compiled-crushmap-filename}
+# crushtool -d {compiled-crushmap-filename} -o {decompiled-crushmap-filename}
+# edit {decompiled-crushmap-filename}
+# ...
+# crushtool -c {decompiled-crush-map-filename} -o {compiled-crush-map-filename}
+# ceph osd setcrushmap -i  {compiled-crushmap-filename}
+```
 
-10. 查看状态
+### 10. 查看状态
 
-    {% highlight text %}
-    # ceph -s
-    # ceph osd tree
-    # rados lspools
-    {% endhighlight %}
-
-
+```
+# ceph -s
+# ceph osd tree
+# rados lspools
+```

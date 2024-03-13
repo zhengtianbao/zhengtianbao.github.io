@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Libvirt 磁盘IO限速"
+title: "Libvirt 磁盘 IO 限速"
 date:  2018-06-26 16:41:20
 categories: Libvirt Qemu KVM
 ---

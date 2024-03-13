@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kubernetes cookbook之项目结构篇"
+title: "kubernetes cookbook 之项目结构篇"
 date:  2021-10-13 14:22:29
 categories: Kubernetes
 ---

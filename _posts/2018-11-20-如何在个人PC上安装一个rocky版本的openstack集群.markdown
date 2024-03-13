@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "如何在个人PC上安装一个rocky版本的openstack集群"
+title: "如何在个人 PC 上安装一个 rocky 版本的 openstack 集群"
 date:  2018-11-20 14:10:37
 categories: Openstack
 ---

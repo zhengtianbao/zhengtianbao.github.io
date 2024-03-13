@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kubernetes cookbook之日志篇"
+title: "kubernetes cookbook 之日志篇"
 date:  2021-10-17 09:25:29
 categories: Kubernetes
 ---

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kubernetes cookbook之优雅退出篇"
+title: "kubernetes cookbook 之优雅退出篇"
 date:  2021-10-19 14:23:34
 categories: Kubernetes
 ---

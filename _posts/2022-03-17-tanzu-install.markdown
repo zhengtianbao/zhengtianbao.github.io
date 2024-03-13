@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Tanzu安装测试"
+title: "Tanzu 安装测试"
 date: 2022-03-17 09:21:22
 categories: Tanzu Kubernetes
 ---

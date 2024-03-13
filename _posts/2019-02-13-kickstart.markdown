@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kickstart网络引导批量部署服务器"
+title: "kickstart 网络引导批量部署服务器"
 date:  2019-02-13 14:37:21
 categories: Kickstart
 ---

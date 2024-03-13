@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kubernetes cookbook之命令行解析篇"
+title: "kubernetes cookbook 之命令行解析篇"
 date:  2021-10-18 19:25:29
 categories: Kubernetes
 ---

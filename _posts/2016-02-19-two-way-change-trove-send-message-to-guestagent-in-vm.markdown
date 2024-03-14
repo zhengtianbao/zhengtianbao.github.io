@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Two way change Trove send message to guestagent in VM"
-date:   2016-02-19 14:58:53
-categories: Trove
+title: "Two way change Trove send message to guestagent in VM"
+date: 2016-02-19 14:58:53
+categories: ["2016"]
+tags: [trove]
 ---
 
 上篇文章介绍了 Trove 与虚机通信的方式是通过 rabbitmq 实现：

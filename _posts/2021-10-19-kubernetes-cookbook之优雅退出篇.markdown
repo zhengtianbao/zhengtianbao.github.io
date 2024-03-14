@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "kubernetes cookbook 之优雅退出篇"
-date:  2021-10-19 14:23:34
-categories: Kubernetes
+date: 2021-10-19 14:23:34
+categories: ["2021"]
+tags: [kubernetes]
 ---
 
 ![log](/images/gracefulshutdown.jpeg)

@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "Ansible install Greenplum"
-date:  2018-06-15 16:17:29
-categories: Ansible Greenplum
+date: 2018-06-15 16:17:29
+categories: ["2018"]
+tags: [ansible, greenplum]
 ---
 
 greenplum 官方提供安装工具，只需要先部署 master 节点就可以通过 gpseginstall 命令分发到各个 segment 节点，但是各个节点的系统环境参数调优工作需要提前处理，因此使用 ansible 提前对各个节点进行预处理。
@@ -120,6 +120,6 @@ postgres=# \q
 
 ## 集群运行中增加segment节点
 
-参见下文:
+参见下文：
 
-[greenplum扩容](https://zhengtianbao.com/greenplum/2018/06/20/add-new-segment-to-greenplum-cluster.html)
+[greenplum 扩容](https://zhengtianbao.com/greenplum/2018/06/20/add-new-segment-to-greenplum-cluster.html)

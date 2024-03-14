@@ -1,8 +1,9 @@
 ---
-layout: post
 title: "Tanzu 安装测试"
 date: 2022-03-17 09:21:22
 categories: Tanzu Kubernetes
+categories: ["2022"]
+tags: [kubernetes, tanzu]
 ---
 
 ![log](/images/tanzu.png)
@@ -592,12 +593,12 @@ rtt min/avg/max/mdev = 1.762/1.762/1.762/0.000 ms
 
 注意：因为是 macvlan 的方式，所以需要配置 vswitch 的网络为混杂模式。另外，pod 无法与所在主机 IP 通信，因为 macvlan 的父设备只负责接收包，而不会处理包。
 
-## 参考链接：
+## 参考链接
 
-esxi部署: <https://itsjustbytes.wordpress.com/2020/12/14/kvm-esxi-7-as-a-nested-cluster>
+esxi 部署：<https://itsjustbytes.wordpress.com/2020/12/14/kvm-esxi-7-as-a-nested-cluster>
 
-vCenter部署: <https://itsjustbytes.wordpress.com/2021/01/01/install-vcsa-in-nested-vsphere-hosts>
+vCenter 部署：<https://itsjustbytes.wordpress.com/2021/01/01/install-vcsa-in-nested-vsphere-hosts>
 
-vCenter部署踩坑: <https://segmentfault.com/a/1190000039928498>
+vCenter 部署踩坑：<https://segmentfault.com/a/1190000039928498>
 
-tanzu部署: <https://tanzucommunityedition.io/docs/latest/getting-started/>
+tanzu 部署：<https://tanzucommunityedition.io/docs/latest/getting-started/>

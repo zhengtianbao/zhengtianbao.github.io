@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "kubernetes cookbook 之日志篇"
-date:  2021-10-17 09:25:29
-categories: Kubernetes
+date: 2021-10-17 09:25:29
+categories: ["2021"]
+tags: [kubernetes]
 ---
 
 ![log](/images/log.jpeg)

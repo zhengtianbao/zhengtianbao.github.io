@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "Libvirt 磁盘 IO 限速"
-date:  2018-06-26 16:41:20
-categories: Libvirt Qemu KVM
+date: 2018-06-26 16:41:20
+categories: ["2018"]
+tags: [libvirt, kvm]
 ---
 
 随着[我们公司](https://jfbrother.com)开发业务的不断增重，Dell 服务器上的虚拟机日益增多，而虚拟机磁盘却都压在物理服务器单块raid 磁盘上共享 IO。考虑到某台虚拟机将要部署爬虫业务，可能占用大量 IO，因此防患与未然，限制其虚拟机的磁盘 IO，以免影响其他虚拟机或者宿主机的正常读写。

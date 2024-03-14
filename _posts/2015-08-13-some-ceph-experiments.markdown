@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "ceph experiments about replication size"
-date:   2015-08-13 15:15:47
-categories: Ceph
+title: "ceph experiments about replication size"
+date: 2015-08-13 15:15:47
+categories: ["2015"]
+tags: [ceph]
 ---
 
 在一次 ceph 环境的部署中，由于一台机器主板坏了，导致 ceph 集群状态异常，在恢复过程中意外的发现 pool replication size 的问题，这里记录下。
@@ -298,16 +298,16 @@ test
 
 找到了问题的原因：是由于在 CRUSHMap 中的 _rule_ 设置的两个属性 `min_size`，`max_size` 导致的。
 
-- min_size: If a pool makes fewer replicas than this number，CRUSH will *NOT* select this rule.
-- max_size: If a pool makes more replicas than this number，CRUSH will *NOT* select this rule.
+- min_size: If a pool makes fewer replicas than this number, CRUSH will *NOT* select this rule.
+- max_size: If a pool makes more replicas than this number, CRUSH will *NOT* select this rule.
 
-也就是说当某个 pool 的 _replicated size_ 只有在区间 [min_size，max_size] 之间时，CRUSH 算法才会选择这个 rule。
+也就是说当某个 pool 的 _replicated size_ 只有在区间 [min_size, max_size] 之间时，CRUSH 算法才会选择这个 rule。
 
 开始误以为这两个参数和 pool 下的 _replicated size_，_min size_ 是一个意思，作为 default 值配置，才产生了这个错误。
 
 最后建议 rule 的 `min_size` 设为 _1_，`max_size` 设为 _10_。
 
-## 参考链接：
+## 参考链接
 
 <http://ceph.com/docs/master/rados/operations/pools/#set-the-number-of-object-replicas>
 

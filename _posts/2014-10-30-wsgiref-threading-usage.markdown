@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "wsgiref threading usage"
 date: 2014-10-30 20:46:53
-categories: Python
+categories: ["2014"]
+tags: [python]
 ---
 
 本文记录了在使用 wsgiref 的 WSGIServer 时碰到的并发请求阻塞问题，事情的起因是在一个忙碌的周四接到个任务，需求是要模拟编写一个支付宝接口用来测试现有系统的支付流程完整性。
@@ -31,7 +31,7 @@ def fakepay():
     do_something()
     # POST notify_url
     try:
-        do_request(notify_url，'POST'，body)
+        do_request(notify_url, 'POST', body)
     except Timeout:
         return False
     return True
@@ -53,7 +53,7 @@ def fakepay():
 import threading
 
 def notify():
-    do_request(notify_url，'POST'，body)
+    do_request(notify_url, 'POST', body)
 
 def fakepay():
     do_something()
@@ -74,11 +74,11 @@ wsgiref.WSGIServer --> BaseHTTPServer.HTTPServer --> SocketServer.TCPServer
 TCPServer 里有这样的注释：
 
 ```
-    # The distinction between handling，getting，processing and
+    # The distinction between handling, getting, processing and
     # finishing a request is fairly arbitrary.  Remember:
     #
     # - handle_request() is the top-level call.  It calls
-    #   select，get_request()，verify_request() and process_request()
+    #   select, get_request(), verify_request() and process_request()
     # - get_request() is different for stream or datagram sockets
     # - process_request() is the place that may fork a new process
     #   or create a new thread to finish the request
@@ -112,7 +112,7 @@ class WSGIServer(SocketServer.ThreadingTCPServer):
     def server_bind(self):
         """Override server_bind to store the server name."""
         SocketServer.TCPServer.server_bind(self)
-        host，port = self.socket.getsockname()[:2]
+        host, port = self.socket.getsockname()[:2]
         self.server_name = socket.getfqdn(host)
         self.server_port = port
         self.setup_environ()

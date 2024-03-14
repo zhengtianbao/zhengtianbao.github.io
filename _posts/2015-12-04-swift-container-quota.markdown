@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "swift set container quotas"
-date:   2015-12-04 13:17:20
-categories: Swift
+title: "swift set container quotas"
+date: 2015-12-04 13:17:20
+categories: ["2015"]
+tags: [swift]
 ---
 
 本文记录了如何设置 swift 对象存储 container 的 quota。

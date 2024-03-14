@@ -1,10 +1,9 @@
 ---
-layout: post
-title:  "Use Python Build Windows Service"
-date:   2016-08-09 14:25:53
-categories: Python
+title: "Use Python Build Windows Service"
+date: 2016-08-09 14:25:53
+categories: ["2016"]
+tags: [python]
 ---
-
 
 起因是想写一个脚本在 Windows 虚拟机启动的时候对 SQLServer 服务进行一些初始化的操作，如修改用户密码，修改配置之类的。
 于是写了一个 PowerShell 脚本去做这些事情，同时修改注册表设为自启动。
@@ -14,74 +13,74 @@ categories: Python
 代码很简单，用现成的 pywin32 包：
 
 ```python
-import win32serviceutil   
-import win32service   
-import win32event   
+import win32serviceutil
+import win32service
+import win32event
   
-class PythonService(win32serviceutil.ServiceFramework):   
+class PythonService(win32serviceutil.ServiceFramework):
 
-    # 服务名  
-    _svc_name_ = "PythonService"  
-    # 服务显示名称  
-    _svc_display_name_ = "Python Service Demo"  
-    # 服务描述  
-    _svc_description_ = "Python service demo."  
+    # 服务名
+    _svc_name_ = "PythonService"
+    # 服务显示名称
+    _svc_display_name_ = "Python Service Demo"
+    # 服务描述
+    _svc_description_ = "Python service demo."
   
-    def __init__(self，args):   
-        win32serviceutil.ServiceFramework.__init__(self，args)   
-        self.hWaitStop = win32event.CreateEvent(None，0，0，None)  
-        self.logger = self._getLogger()  
-        self.isAlive = True  
+    def __init__(self, args):
+        win32serviceutil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+        self.logger = self._getLogger()
+        self.isAlive = True
           
-    def _getLogger(self):  
-        import logging  
-        import os  
-        import inspect  
+    def _getLogger(self):
+        import logging
+        import os
+        import inspect
           
-        logger = logging.getLogger('[PythonService]')  
+        logger = logging.getLogger('[PythonService]')
           
-        this_file = inspect.getfile(inspect.currentframe())  
-        dirpath = os.path.abspath(os.path.dirname(this_file))  
-        handler = logging.FileHandler(os.path.join(dirpath，"service.log"))  
+        this_file = inspect.getfile(inspect.currentframe())
+        dirpath = os.path.abspath(os.path.dirname(this_file))
+        handler = logging.FileHandler(os.path.join(dirpath, "service.log"))
           
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')  
+        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         handler.setFormatter(formatter)  
           
-        logger.addHandler(handler)  
-        logger.setLevel(logging.INFO)  
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
           
-        return logger  
+        return logger
   
-    def SvcDoRun(self):  
-        import time  
-        self.logger.error("svc do run....")   
-        while self.isAlive:  
+    def SvcDoRun(self):
+        import time
+        self.logger.error("svc do run....")
+        while self.isAlive:
             # 这里执行要做的的事
             self.setup_sqlserver()
             time.sleep(60)
-        # 等待服务被停止   
-        #win32event.WaitForSingleObject(self.hWaitStop，win32event.INFINITE)   
+        # 等待服务被停止
+        #win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
 
     def setup_sqlserver(self):
         pass
 
-    def SvcStop(self):   
-        # 先告诉SCM停止这个过程   
-        self.logger.error("svc do stop....")  
-        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)   
-        # 设置事件   
-        win32event.SetEvent(self.hWaitStop)   
+    def SvcStop(self):
+        # 先告诉SCM停止这个过程
+        self.logger.error("svc do stop....")
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        # 设置事件
+        win32event.SetEvent(self.hWaitStop)
         self.isAlive = False  
   
-if __name__=='__main__':   
-    win32serviceutil.HandleCommandLine(PythonService)  
+if __name__=='__main__':
+    win32serviceutil.HandleCommandLine(PythonService)
 ```
 
 安装服务：
 
 ```
 # 加参数--start auto设为自启动
-python PythonService.py --startup auto install 
+python PythonService.py --startup auto install
 ```
 
 注意：
@@ -96,7 +95,7 @@ python PythonService.py --startup auto install
 
 ![依赖关系](/images/sqlserver2.png)
 
-## 参考链接：
+## 参考链接
 
 <http://blog.csdn.net/ghostfromheaven/article/details/8604738>
 

@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "swift object store use ceph backend"
-date:   2015-09-11 14:46:53
-categories: Swift Ceph
+title: "swift object store use ceph backend"
+date: 2015-09-11 14:46:53
+categories: ["2015"]
+tags: [swift, ceph]
 ---
 
 本文记录了 swift 使用 ceph 作为对象存储方案的原因以及一些问题。
@@ -11,8 +11,8 @@ Swift 作为对象存储本身是提供 replication 设置的，通常会设置�
 
 ```
 [root@swift ~]# swift-ring-builder /etc/swift/object.ring.gz 
-/etc/swift/object.ring.gz，build version 3
-262144 partitions，3.000000 replicas，1 regions，3 zones，3 devices，0.00 balance
+/etc/swift/object.ring.gz, build version 3
+262144 partitions, 3.000000 replicas, 1 regions, 3 zones, 3 devices, 0.00 balance
 The minimum number of hours before a partition can be reassigned is 1
 Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
              0       1     1      10.160.0.3  6000      10.160.0.3              6000 keystonedev 100.00     262144    0.00 
@@ -41,6 +41,6 @@ stackforge 有提供 swift-ceph-backend 项目做支持: <https://github.com/sta
 
 因此需要修改 **proxy/controller/obj.py** 下的 `ObjectController` 的 `PUT` 和 `DELETE` 方法，代码略。
 
-## 参考链接：
+## 参考链接
 
 <https://software.intel.com/en-us/blogs/2015/02/03/using-multiple-backends-in-openstack-swift>

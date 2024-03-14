@@ -1,11 +1,9 @@
 ---
-layout: post
 title: "kubernetes flannel 网络模式"
-date:  2018-11-06 15:58:23
-categories: Kubernetes Flannel
+date: 2018-11-06 15:58:23
+categories: ["2018"]
+tags: [kubernetes, flannel]
 ---
-
-## kubernetes flannel 网络模式
 
 最近在研究 kubernetes 各个节点间容器通信的原理，深感自己网络知识的不足，从简单的 flannel 开始看起，搜集整理了网上的资料，记录下来。
 
@@ -20,6 +18,8 @@ kubernetes 各节点间网络结构如下图：
 | node1 | 192.168.1.47 | master | etcd kube-controller-manager kube-apiserver kube-scheduler kube-proxy kubelet flanneld |
 | node2 | 192.168.1.48 | node   | etcd kube-proxy kubelet flanneld                             |
 | node3 | 192.168.1.49 | node   | etcd kube-proxy kubelet flanneld                             |
+
+## kubernetes flannel 网络模式
 
 ### host-gw
 
@@ -68,10 +68,10 @@ flannel 创建一个 `overlay network` 其地址为 `100.96.0.0/16`， node1 节
 
 vxlan 模式是 flanneld 推荐使用的 backend，采用 kernel 中的 vxlan 替换了 flannel 自己实现的 udp 服务。
 
-## 参考链接：
+## 参考链接
 
-Host-gw 模式: <https://prefetch.net/blog/2018/02/20/getting-the-flannel-host-gw-working-with-kubernetes/>
+Host-gw 模式：<https://prefetch.net/blog/2018/02/20/getting-the-flannel-host-gw-working-with-kubernetes/>
 
-UDP模式: <https://blog.laputa.io/kubernetes-flannel-networking-6a1cb1f8ec7c>
+UDP 模式：<https://blog.laputa.io/kubernetes-flannel-networking-6a1cb1f8ec7c>
 
-VXLAN模式：<http://dockone.io/article/2216>
+VXLAN 模式：<http://dockone.io/article/2216>

@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Spark submit python wordcount on yarn cluster mode"
-date:   2018-07-06 17:23:53
-categories: Spark Hadoop
+title: "Spark submit python wordcount on yarn cluster mode"
+date: 2018-07-06 17:23:53
+categories: ["2018"]
+tags: [spark, hadoop]
 ---
 
 最近这段时间补习了下 `Spark` 相关的知识点，也纠正了之前不少错误的理解，总的来说实践出真理，只有动手才能更好的理解。这篇文章主要记录第一次使用 `spark` 结合 `hadoop` 跑 `python` 程序的过程，算是大数据学习的起点吧。

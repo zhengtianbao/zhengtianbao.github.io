@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "How Manila Communicate With VM"
-date:   2016-01-29 17:42:53
-categories: Manila Trove Sahara
+title: "How Manila Communicate With VM"
+date: 2016-01-29 17:42:53
+categories: ["2016"]
+tags: [manila, trove, sahara]
 ---
 
 上周重装了 Manila 服务，这次就顺便整理了下 Trove，Manila，Sahara，Murano 几个项目与虚机通信的方式。
@@ -38,6 +38,6 @@ Trove，Murano 使用 rabbitmq 安全性存在问题，Manila 需要维护自己
 
 完:)
 
-## 参考链接：
+## 参考链接
 
 <http://mytrix.me/2015/01/network-part-of-manila/>

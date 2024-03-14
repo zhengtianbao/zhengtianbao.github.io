@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "ceph cache tiering"
-date:   2015-12-23 15:41:53
-categories: Ceph
+title: "ceph cache tiering"
+date: 2015-12-23 15:41:53
+categories: ["2015"]
+tags: [ceph]
 ---
 
 本文介绍 ceph cache tiering 的使用场景。
@@ -47,6 +47,6 @@ cache tiering 作为缓存层能在一定程度上提升普通 pool 的读写，
 
 thanks :)
 
-## 参考链接：
+## 参考链接
 
 <http://www.sebastien-han.fr/blog/2014/06/10/ceph-cache-pool-tiering-scalable-cache/>

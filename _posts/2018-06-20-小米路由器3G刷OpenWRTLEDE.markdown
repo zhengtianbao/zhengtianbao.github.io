@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "小米路由器 3G 刷 OpenWRT/LEDE"
-date:  2018-06-20 11:49:29
-categories: OpenWRT LEDE
+date: 2018-06-20 11:49:29
+categories: ["2018"]
+tags: [openwrt]
 ---
 
 2018.6月某宝入手 [小米路由器 3G](https://www.mi.com/miwifi3g/) 价格 179 元，结合配置来看性价比高，适合用来折腾，遂刷机。
@@ -80,7 +80,7 @@ categories: OpenWRT LEDE
 
 9. 至此刷机完毕，enjoy it！
 
-## 参考链接：
+## 参考链接
 
 <https://enterpriseadmins.blogspot.com/2017/09/step-by-step-openwrtlede-base.html>
 

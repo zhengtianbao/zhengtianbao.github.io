@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "swift s3 support"
-date:   2015-07-23 20:46:53
-categories: Swift S3
+title: "swift s3 support"
+date: 2015-07-23 20:46:53
+categories: ["2015"]
+tags: [swift]
 ---
 
 本文记录了如何配置 swift 使其支持 S3 接口协议，以及测试相关工具兼容性的过程。
@@ -91,7 +91,7 @@ cache = swift.cache
 ...    is_secure=False,
 ...    calling_format=boto.s3.connection.OrdinaryCallingFormat())
 >>> c.get_all_buckets()
-[<Bucket: 1st>，<Bucket: 2nd>，<Bucket: media.mydomain.com>，<Bucket: media.yourdomain.com>]
+[<Bucket: 1st>, <Bucket: 2nd>, <Bucket: media.mydomain.com>, <Bucket: media.yourdomain.com>]
 >>> test_b = c.create_bucket('test') # 创建一个 bucket
 >>> test_b.get_all_keys() # 获取 bucket 中的所有 key
 []
@@ -107,7 +107,7 @@ cache = swift.cache
 []
 >>> c.delete_bucket('test')
 >>> c.get_all_buckets()
-[<Bucket: 1st>，<Bucket: 2nd>，<Bucket: media.mydomain.com>，<Bucket: media.yourdomain.com>]
+[<Bucket: 1st>, <Bucket: 2nd>, <Bucket: media.mydomain.com>, <Bucket: media.yourdomain.com>]
 >>> 
 ```
 
@@ -165,7 +165,7 @@ Windows 环境下连接 Amazon S3 的客户端，注意连接的时候 *NOT* use
 
 ![S3 Browser](/images/s3browser.png)
 
-## 参考链接：
+## 参考链接
 
 <http://blog.csdn.net/anhuidelinger/article/details/9749973>
 

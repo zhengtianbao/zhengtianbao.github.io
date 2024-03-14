@@ -1,15 +1,15 @@
 ---
-layout: post
 title: "kickstart 网络引导批量部署服务器"
 date:  2019-02-13 14:37:21
-categories: Kickstart
+categories: ["2019"]
+tags: [kickstart]
 ---
 
-本文记录了如何使用kickstart PXE批量部署服务器。
+本文记录了如何使用 kickstart PXE 批量部署服务器。
 
 ## 安装步骤
 
-### 1. 配置dnsmasq
+### 1. 配置 dnsmasq
 
 ```
 yum install dnsmasq
@@ -194,8 +194,8 @@ firewall-cmd --add-port=4011/udp --permanent
 firewall-cmd --reload
 ```
 
-## 参考链接：
+## 参考链接
 
-[安装PXE引导](https://linux.cn/article-4902-1.html#3_1878)
+[安装 PXE 引导](https://linux.cn/article-4902-1.html#3_1878)
 
-[使用Kickstart实现CentOS自动化安装](http://debugo.com/kickstart-install-centos/)
+[使用 Kickstart 实现 CentOS 自动化安装](http://debugo.com/kickstart-install-centos/)

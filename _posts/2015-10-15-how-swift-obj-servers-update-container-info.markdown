@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "how swift object servers update container info"
-date:   2015-10-15 15:46:53
-categories: Swift
+title: "how swift object servers update container info"
+date: 2015-10-15 15:46:53
+categories: ["2015"]
+tags: [swift]
 ---
 
 继上篇文章所改的 Swift 使用 Ceph 作为后端存储后，3 obj，3 container，3 account，2 proxy 工作正常。
@@ -35,17 +35,17 @@ categories: Swift
 关键是第 4 步，obj server 是通过请求头中的信息判断要更新的 container 地址，而这个请求头是 proxy server 发过来的，也就是说 proxy server 已经确定了哪些 obj server 更新对应的 container server。
 
 ```python
-    def _backend_requests(self，req，n_outgoing,
-                          container_partition，containers,
-                          delete_at_container=None，delete_at_partition=None,
+    def _backend_requests(self, req, n_outgoing,
+                          container_partition, containers,
+                          delete_at_container=None, delete_at_partition=None,
                           delete_at_nodes=None):
-        headers = [self.generate_request_headers(req，additional=req.headers)
+        headers = [self.generate_request_headers(req, additional=req.headers)
                    for _junk in range(n_outgoing)]
 
         for header in headers:
             header['Connection'] = 'close'
 
-        for i，container in enumerate(containers):
+        for i, container in enumerate(containers):
             i = i % len(headers)
 
             headers[i]['X-Container-Partition'] = container_partition
@@ -56,7 +56,7 @@ categories: Swift
                 headers[i].get('X-Container-Device'),
                 container['device'])
 
-        for i，node in enumerate(delete_at_nodes or []):
+        for i, node in enumerate(delete_at_nodes or []):
             i = i % len(headers)
 
             headers[i]['X-Delete-At-Container'] = delete_at_container
@@ -75,6 +75,6 @@ categories: Swift
 
 这就很好的解释了测试结果，假设 o3 和 c3 挂了，o1 虽然能上传对象到 ceph 但是有 1/3 几率更新目标 container 为 c3 时失败，导致 list container 的时候获取不到。
 
-## 参考链接：
+## 参考链接
 
 <http://www.allthingsdistributed.com/2008/12/eventually_consistent.html>

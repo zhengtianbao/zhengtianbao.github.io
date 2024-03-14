@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Libvirt 创建整机快照"
-date:   2018-07-16 17:06:53
-categories: Libvirt
+title: "Libvirt 创建整机快照"
+date: 2018-07-16 17:06:53
+categories: ["2018"]
+tags: [libvirt]
 ---
 
 最近在尝试使用 `ansible` 部署 `ceph` 作为对象存储使用，因为没有部署 `openstack`，所以只能手动对虚拟机进行快照以及回滚操作了。但是发现 `virsh` 没有对挂载盘进行 `snapshot` 相关的操作。只能对虚拟机整机级别的快照回滚。回忆 `cinder` 对 `volume` 的快照，取决于后端存储是否支持，例如 `ceph` 对 `rbd` 就提供了 `snapshot` 的操作。这篇文章基于 `libvirt` 本身进行快照操作。

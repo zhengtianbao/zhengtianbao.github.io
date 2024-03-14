@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "Zabbix 数据库磁盘占用空间计算"
 date:  2018-06-29 15:19:20
-categories: Zabbix
+categories: ["2018"]
+tags: [zabbix]
 ---
 
 针对线上 Zabbix 所需数据库磁盘占用空间进行了一个简单的计算。
@@ -59,6 +59,6 @@ zabbix 自身占用空间 10M
 
 Zabbix 会对监控项历史数据以及趋势数据进行清理，所以占用总空间会维持在一个稳定值。
 
-## 参考链接：
+## 参考链接
 
-[zabbix官网](https://www.zabbix.com/documentation/3.4/manual/installation/requirements)
+[zabbix 官网](https://www.zabbix.com/documentation/3.4/manual/installation/requirements)

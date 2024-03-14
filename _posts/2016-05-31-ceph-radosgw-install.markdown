@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Ceph Radosgw install Guide"
-date:   2016-05-31 14:30:53
-categories: Ceph Radosgw
+title: "Ceph Radosgw install Guide"
+date: 2016-05-31 14:30:53
+categories: ["2016"]
+tags: [ceph]
 ---
 
 radosgw 是建立在 librados 之上的对象存储网关，和 openstack swift 一样用来存放 object。同时它支持两种API：s3 和 swift。就是说 radosgw 可以替代 swift 作为 openstack 的对象存储（object storage）。
@@ -36,7 +36,7 @@ rgw keystone admin password = admin
 rgw keystone admin project = admin
 rgw keystone admin domain = default
 rgw keystone api version = 3
-rgw keystone accepted roles = SwiftOperator,admin,_member_，project_admin，member2
+rgw keystone accepted roles = SwiftOperator,admin,_member_, project_admin, member2
 rgw keystone token cache size = 500
 rgw keystone revocation interval = 500
 # 设置使用keystone作为radosgw认证
@@ -47,7 +47,7 @@ rgw keystone verify ssl = false
 #keyring = /etc/ceph/ceph.client.radosgw.Control-1.keyring
 ```
 
-## 生成 keyring（如果没有 cephx，可跳过）
+## 生成 keyring（如果没有 cephx 可跳过）
 
 ```
 ceph auth get-or-create client.radosgw.Control-1 mon 'allow *' mds 'allow *' osd 'allow *' -o /etc/ceph/ceph.client.radosgw.Control-1.keyring
@@ -79,6 +79,6 @@ systemctl start ceph-radosgw@radosgw.Control-1
 swift -V3 list
 ```
 
-## 参考链接：
+## 参考链接
 
 <http://docs.ceph.com/docs/hammer/radosgw/keystone/>

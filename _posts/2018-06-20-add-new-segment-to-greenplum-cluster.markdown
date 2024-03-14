@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "Add new segment to greenplum cluster"
-date:  2018-06-20 18:09:29
-categories: Greenplum
+date: 2018-06-20 18:09:29
+categories: ["2018"]
+tags: [ansible, greenplum]
 ---
 
 在生产环境中，因为数据量的增加，存在动态扩容 greenplum 存储容量的需求。
@@ -151,7 +151,7 @@ replication_port	如果没有 mirror 则不需要（用于 replication 的端口
 [gpadmin@mdw ~]$ gpstart
 ```
 
-## 参考链接：
+## 参考链接
 
 <https://yq.aliyun.com/articles/177>
 

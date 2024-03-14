@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "kubernetes cookbook 之命令行解析篇"
-date:  2021-10-18 19:25:29
-categories: Kubernetes
+date: 2021-10-18 19:25:29
+categories: ["2021"]
+tags: [kubernetes]
 ---
 
 ![log](/images/flag.jpeg)

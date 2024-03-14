@@ -1,8 +1,9 @@
 ---
 layout: post
-title:  "ceph calamari install"
-date:   2015-07-10 20:46:53
-categories: Ceph Calamari
+title: "ceph calamari install"
+date: 2015-07-10 20:46:53
+categories: ["2015"]
+tags: [ceph]
 ---
 
 本文主要记录了安装 ceph calamari 过程中碰到的问题以及解决方案。
@@ -118,8 +119,8 @@ cns-5:
 
 ```
 # supervisorctl status
-carbon-cache                     RUNNING    pid 7745，uptime 2:03:54
-cthulhu                          RUNNING    pid 14432，uptime 1:05:01
+carbon-cache                     RUNNING    pid 7745, uptime 2:03:54
+cthulhu                          RUNNING    pid 14432, uptime 1:05:01
 ```
 
 至此，Calamari-server 安装完毕，调用API：
@@ -149,7 +150,7 @@ reactor:
   - 'salt/minion/*/start':
     - /opt/calamari/salt/reactor/start.sls
 
-# add the Debian，RedHat and SUSE default apache users to
+# add the Debian, RedHat and SUSE default apache users to
 # avoid making this file distro-dependent
 
 client_acl:
@@ -170,7 +171,7 @@ client_acl:
 
 详见：<http://docs.saltstack.cn/zh_CN/latest/ref/clientacl.html>
 
-## 4. 安装 Calamari-client
+### 4. 安装 Calamari-client
 
 ```
 # yum install npm ruby rubygems
@@ -196,7 +197,7 @@ Loading "connect_proxy.js" tasks...ERROR
     >> TypeError: Cannot read property 'prototype' of undefined
 
 Looks like I've found the solution in this GitHub issue68 for grunt-connect-proxy.
-I found a few fixes whilst this gets patched up，you only need to do one or the other:
+I found a few fixes whilst this gets patched up, you only need to do one or the other:
 
 Change the source for grunt-connect-proxy in your package.json to this:
 "grunt-connect-proxy": "git://github.com/ruiaraujo/grunt-connect-proxy#patch-1",
@@ -235,7 +236,7 @@ http://10.160.0.43/dashboard/
 
 http://10.160.0.43/graphite/dashboard/
 
-## 参考链接：
+## 参考链接
 
 <http://ceph.com/category/calamari/>
 

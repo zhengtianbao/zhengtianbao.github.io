@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Install Ceph Infernalis(v9.2.0) in CentOS 7.2"
-date:   2015-12-16 13:53:20
-categories: Ceph
+title: "Install Ceph Infernalis(v9.2.0) in CentOS 7.2"
+date: 2015-12-16 13:53:20
+categories: ["2015"]
+tags: [ceph]
 ---
 
 本文记录了在 CentOS 7.2 环境下安装 Ceph v9.2.0 的步骤。

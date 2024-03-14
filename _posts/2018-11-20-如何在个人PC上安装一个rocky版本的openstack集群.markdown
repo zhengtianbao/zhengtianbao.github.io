@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "如何在个人 PC 上安装一个 rocky 版本的 openstack 集群"
-date:  2018-11-20 14:10:37
-categories: Openstack
+date: 2018-11-20 14:10:37
+categories: ["2018"]
+tags: [openstack]
 ---
 
 最近在做高校大数据实验室项目过程中发现，就场景而言相比较容器老师更容易接受虚拟机的模式，例如想让学生搭个 hadoop 集群，然后在此基础上做实验，就需要有一个直观的网络拓扑让学生理解。kubernetes 只暴露应用入口的设计原则显然不适合。因此，kubernetes on openstack 兴许是个好的解决方案。

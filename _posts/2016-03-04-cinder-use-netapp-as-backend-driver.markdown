@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Cinder use Netapp as backend driver"
-date:   2016-03-04 14:58:53
-categories: Cinder Netapp
+title: "Cinder use Netapp as backend driver"
+date: 2016-03-04 14:58:53
+categories: ["2016"]
+tags: [cinder]
 ---
 
 本文主要介绍 cinder 对接 Netapp 商业存储做为后端存储的配置过程。
@@ -98,6 +98,6 @@ enabled_backends=lvm,nfs
 # cinder create --volume_type netapp --display_name nfsvolume 1
 ```
 
-## 参考链接：
+## 参考链接
 
 <https://access.redhat.com/articles/1323213>

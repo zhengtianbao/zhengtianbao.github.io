@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "cinder multi-backend support with ceph"
-date:   2014-12-22 20:46:53
-categories: Ceph Cinder
+title: "cinder multi-backend support with ceph"
+date: 2014-12-22 20:46:53
+categories: ["2014"]
+tags: [ceph, cinder]
 ---
 
 本文主要记录了将 ceph 中的不同读写性能的存储 pool 作为 cinder 的多种后端存储的过程。
@@ -226,7 +226,7 @@ rule replicated_ruleset {
 在 [default] 部分修改 enabled_backends 配置为：
 
 ```
-enabled_backends=RBDDriver-1，RBDDriver-2
+enabled_backends=RBDDriver-1, RBDDriver-2
 ```
 
 在 cinder.conf 的最后加上两个段：
@@ -377,6 +377,6 @@ osd journal = /var/lib/ceph/osd/ceph-$id/journal
 osd journal size = {2 * (expected throughput * filestore max sync interval)}
 ```
 
-## 参考链接：
+## 参考链接
 
 <http://blog.csdn.net/juvxiao/article/details/20536117>

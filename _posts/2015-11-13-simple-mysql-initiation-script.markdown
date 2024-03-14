@@ -1,8 +1,8 @@
 ---
-layout: post
-title:  "Simple MySQL Initiation Script"
-date:   2015-10-15 15:46:53
-categories: Trove MySQL
+title: "Simple MySQL Initiation Script"
+date: 2015-10-15 15:46:53
+categories: ["2015"]
+tags: [trove, mysql]
 ---
 
 一个简单的 MySQL 初始化脚本，用于配置虚机内部的 MySQL 服务，参考了 `OpenStack` `Trove` 项目里的代码。

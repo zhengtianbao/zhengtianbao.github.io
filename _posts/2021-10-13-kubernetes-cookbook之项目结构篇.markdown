@@ -1,8 +1,8 @@
 ---
-layout: post
 title: "kubernetes cookbook 之项目结构篇"
-date:  2021-10-13 14:22:29
-categories: Kubernetes
+date: 2021-10-13 14:22:29
+categories: ["2021"]
+tags: [kubernetes]
 ---
 
 ![go](/images/go.jpeg)

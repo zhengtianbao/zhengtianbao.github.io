@@ -5,8 +5,6 @@ categories: ["2021"]
 tags: [kubernetes]
 ---
 
-![log](/images/flag.jpeg)
-
 命令行解析几乎是所有程序的标准功能，go 语言标准库中提供了 `flag` 模块，而 kubernetes 中则使用了 `pflag` 和 `cobra` 来构建。
 
 ## flag 标准库
@@ -281,7 +279,7 @@ etcd server 2: http://192.168.100.12:4001
 
 ## pflag
 
-[pflag](https://github.com/spf13/pflag) 在flag的基础上补充了符合 posix 标准的命令行解析规范，下面简单就 kubernetes 用到的功能来举例说明。
+[pflag](https://github.com/spf13/pflag) 在 flag 的基础上补充了符合 posix 标准的命令行解析规范，下面简单就 kubernetes 用到的功能来举例说明。
 
 
 ### 标记参数废弃

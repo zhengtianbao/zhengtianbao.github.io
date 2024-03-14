@@ -11,7 +11,7 @@ tags: [ansible, greenplum]
 
 横向扩容指增加服务器节点，这在分布式存储系统上是通用解决方案，如 hdfs，ceph 等都能做到横向动态扩容。
 
-本文续接上文：[greenplum 部署](https://zhengtianbao.com/ansible/greenplum/2018/06/15/ansible-install-greenplum.html) 因此环境与上文保持一致，测试增加一台服务器 sdw2 作为segment 节点，服务器列表如下表：
+本文续接上文：[greenplum 部署](https://zhengtianbao.com/posts/ansible-install-greenplum/) 因此环境与上文保持一致，测试增加一台服务器 sdw2 作为segment 节点，服务器列表如下表：
 
 | IP            | hostname  | role           | 数据盘 |
 | ------------- | --------- | -------------- | ------ |
@@ -139,8 +139,8 @@ port				segment 监听端口
 fselocation			segment data 目录，注意是全路径
 dbid				gp 集群的唯一 ID，可以到gp_segment_configuration 中获得，必须顺序累加
 content				可以到 gp_segment_configuration 中获得，必须顺序累加
-prefered_role		角色（p 或 m）（primary，mirror）
-replication_port	如果没有 mirror 则不需要（用于 replication 的端口）
+prefered_role			角色（p 或 m）（primary，mirror）
+replication_port		如果没有 mirror 则不需要（用于 replication 的端口）
 ```
 
 ## 扩容失败回滚操作

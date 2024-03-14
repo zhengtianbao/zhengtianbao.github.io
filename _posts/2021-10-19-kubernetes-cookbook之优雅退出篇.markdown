@@ -5,8 +5,6 @@ categories: ["2021"]
 tags: [kubernetes]
 ---
 
-![log](/images/gracefulshutdown.jpeg)
-
 云原生（cloud native）应用其中有一条就是能够快速迭代，应用不断升级过程中不可避免就是启停操作，删除旧版本，更新新版本，如果应用是部署在 kubernetes 上面的，那么 update deployment 过程中 kubelet 会发送 `SIGTERM` 信号给容器 PID 1 的进程，做为应用程序应当捕获这个信号，可以在真正退出之前做一些清理工作，例如通知注册中心自己已消亡。
 
 ## 捕获 SIGTERM 信号

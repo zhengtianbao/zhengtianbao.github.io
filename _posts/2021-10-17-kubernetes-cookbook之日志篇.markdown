@@ -5,8 +5,6 @@ categories: ["2021"]
 tags: [kubernetes]
 ---
 
-![log](/images/log.jpeg)
-
 开始新项目之前我总是会习惯先设计好日志模块，这样可以避免在开发过程中代码行中充斥着大量且临时的 `print` 输出语句。kubernetes 的日志模块是 C++ 版本 [google/glog](https://github.com/google/glog) 的 Go 语言实现，基本实现了原生 glog 的日志格式，早期版本中是 [golang/glog](https://github.com/golang/glog)，目前已经迁移到 [klog](https://github.com/kubernetes/klog) 作为日志库，被替换的原因总结下来有以下几条：
 
 - glog 默认会在 `init` 方法中注册 `flag` 参数，所以当程序导入glog 库后执行 `flag.Parse()` 会将 glog 的参数默认导入

@@ -87,13 +87,13 @@ python PythonService.py --startup auto install
 
 1. 最好将服务设置为延迟启动：
 
-![延迟启动](/images/sqlserver.png)
+    ![延迟启动](/images/sqlserver.png)
 
 2. 在注册表里设置依赖与SQLServer服务：
 
-![注册表](/images/reg.png)
+    ![注册表](/images/reg.png)
 
-![依赖关系](/images/sqlserver2.png)
+    ![依赖关系](/images/sqlserver2.png)
 
 ## 参考链接
 

@@ -122,4 +122,4 @@ postgres=# \q
 
 参见下文：
 
-[greenplum 扩容](https://zhengtianbao.com/greenplum/2018/06/20/add-new-segment-to-greenplum-cluster.html)
+[greenplum 扩容](https://zhengtianbao.com/posts/add-new-segment-to-greenplum-cluster/)

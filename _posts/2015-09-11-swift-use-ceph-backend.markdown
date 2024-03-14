@@ -30,11 +30,11 @@ Swift 本身提供 *local disk backend* 和 *In-memory backend* 两种方式，�
 
 因为 ceph 对象存储对 keystone 认证支持不好，因此需要使用 swift 结合 ceph 的方式。
 
-stackforge 有提供 swift-ceph-backend 项目做支持: <https://github.com/stackforge/swift-ceph-backend>
+stackforge 有提供 swift-ceph-backend 项目做支持：<https://github.com/stackforge/swift-ceph-backend>
 
 这部分代码只是提供 backend 的实现，而且它默认设置 replicas 为 1，因为备份数由后端的 ceph 保证，但是如果 replicas 为 1，假设通过 ring 找到的 obj 所在的物理机恰巧 down 了，那就获取不到数据了，这个是没法保证 HA 的，这是社区代码没考虑的。
 
-如果 replicas 设置为 3，那么就会存在以下问题:
+如果 replicas 设置为 3，那么就会存在以下问题：
 
 1. `PUT/POST` object 的时候会通过 rados 上传相同文件至少 2 次，重复操作
 2. `DELETE` object 的时候有一定几率失败，因为至少需要 `(3 // 2) + 1` 个成功才算成功，然而 ceph 中只能删除 1 次，因此会导致只成功删除 1 次，其余 2 次失败

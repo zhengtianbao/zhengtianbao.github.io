@@ -5,8 +5,6 @@ categories: ["2021"]
 tags: [kubernetes]
 ---
 
-![go](/images/go.jpeg)
-
 写在前面：本系列是在阅读 kubernetes 源码过程中逐渐整理的一些值得借鉴的编程范式（recipe），汇集起来也就有了这个 **cookbook**，所以内容展示的更多的可能是 code snippet，而不是 How to use Kubernetes。
 
 ## Kubernetes Project Layout

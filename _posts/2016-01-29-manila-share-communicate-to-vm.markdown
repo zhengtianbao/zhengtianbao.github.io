@@ -27,8 +27,8 @@ Manila 本身会创建一个网络 manila_service_network，用户指定需要�
 Sahara 支持 3 种可选配置：
 
 1. 指定 floatingip，这样创建一个 cluster 所有的虚机都要有 floatingip，sahara-engine 直接通过 floatingip 与虚机通信
-2. 不分配 floatingip，这时 sahara-engine 会要求使用 proxy 与虚拟机 fixedip 通信，proxy_command='ssh relay-machine-{tenant_id} nc {host} {port}' 通过一台能与虚机网络通信的跳板机实现（kilo以上版本支持，跳板机需要手动配置）
-3. 不使用 floatingip，使用 namespaces，需要 Neutron/DVR 支持，直接在计算节点通过命令 ip netns exec qrouter-{id} nc {fixedip} 22 做 proxy 与虚机的 fixedip 通信，通过ssh执行命令
+2. 不分配 floatingip，这时 sahara-engine 会要求使用 proxy 与虚拟机 fixedip 通信，proxy_command='ssh relay-machine-{tenant_id} nc {host} {port}' 通过一台能与虚机网络通信的跳板机实现（kilo 以上版本支持，跳板机需要手动配置）
+3. 不使用 floatingip，使用 namespaces，需要 Neutron/DVR 支持，直接在计算节点通过命令 ip netns exec qrouter-{id} nc {fixedip} 22 做 proxy 与虚机的 fixedip 通信，通过 ssh 执行命令
 
 ## 总结
 

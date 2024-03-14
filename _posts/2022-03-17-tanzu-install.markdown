@@ -6,8 +6,6 @@ categories: ["2022"]
 tags: [kubernetes, tanzu]
 ---
 
-![log](/images/tanzu.png)
-
 本文记录 tanzu community 版本在 vSphere7 环境的安装部署以及功能测试。
 
 ## 环境信息

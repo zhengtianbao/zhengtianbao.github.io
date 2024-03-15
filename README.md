@@ -1,6 +1,8 @@
 Zhengtianbao's Blog
 ===================
 
+博客样式风格已替换为：[Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy.git) (v6.5.3)
+
 ## 本地运行环境配置
 
 ### 1. 安装 ruby
@@ -8,7 +10,7 @@ Zhengtianbao's Blog
 注意：
 
 - ubuntu 20.04 环境下用 apt 直接安装的 ruby 版本过低，需要通过 Rbenv 管理工具安装高版本
-- 不要使用 zsh，用 bash 环境安装运行
+- 不要用 zsh，使用 bash 环境安装运行
 
 安装依赖
 

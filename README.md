@@ -7,15 +7,12 @@ Zhengtianbao's Blog
 
 ### 1. 安装 ruby
 
-注意：
-
-- ubuntu 20.04 环境下用 apt 直接安装的 ruby 版本过低，需要通过 Rbenv 管理工具安装高版本
-- 不要用 zsh，使用 bash 环境安装运行
+注意：ubuntu 20.04 环境下用 apt 直接安装的 ruby 版本过低，需要通过 Rbenv 管理工具安装高版本
 
 安装依赖
 
 ```
-sudo apt-get install ruby-full build-essential zlib1g-dev
+sudo apt install build-essential zlib1g-dev libssl-dev
 ```
 
 安装 Rbenv
@@ -35,11 +32,14 @@ echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+注意：如果是 zsh 环境，则将以上步骤中的 `.bashrc` 替换为 `.zshrc`
+
 安装 ruby
 
 ```
-rbenv install 3.1.2
-rbenv global 3.1.2
+rbenv install --list
+rbenv install 3.1.4
+rbenv global 3.1.4
 ```
 
 安装 jekyll
@@ -64,7 +64,7 @@ bundle
 启动本地服务
 
 ```
-bundle exec jekyll s
+bundle exec jekyll server
 ```
 
 访问地址： http://127.0.0.1:4000

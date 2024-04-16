@@ -28,3 +28,162 @@ Pratt parsing 算法通过将操作符根据它们的优先级和结合性进行
 > The approach described below is very simple to understand, trivial to implement, easy to use, extremely efficient in practice if not in theory, yet flexible enough to meet most reasonable syntactic needs of users in both categories (i) and (ii) above. (What is "reasonable" is addressed in more detail below). Moreover, it deals nicely with error detection.
 
 引用自 [Top Down Operator Precedence](https://tdop.github.io/)
+
+## Pratt Parser 实现
+
+本文将用 go 语言描述 Pratt Parser 的实现，出于简单考虑，这里的 Token 定义为单个字符，数字和一些基本算数运算符。
+
+整个解析过程如下，输入的字符串通过 Lexer 分解为 Tokens，然后通过 Parser 解析为 AST。
+
+```
+input string -> Lexer -> tokens -> Parser -> AST
+```
+
+定义 Token 类型，分为三类：
+
+- ATOM 表示单字节的数字或者字母
+- PLUS MINUS ASTERISK SLASH 分别对应符号 + - * /
+- EOF 表示输入字符串的结束
+
+```go
+package main
+
+type TokenType string
+
+const (
+	// End Of File
+	EOF = "EOF"
+
+	// Single Character or Number
+	ATOM = "ATOM"
+
+	// Operators
+	PLUS     = "+"
+	MINUS    = "-"
+	ASTERISK = "*"
+	SLASH    = "/"
+)
+
+type Token struct {
+	Type    TokenType
+	Literal string
+}
+
+func NewToken(tokenType TokenType, ch byte) Token {
+	return Token{Type: tokenType, Literal: string(ch)}
+}
+```
+
+定义 Lexer，主要提供了 NextToken() 方法，用于获取下一个 Token
+
+```go
+package main
+
+type Lexer struct {
+	input        string
+	position     int  // current position in input (points to current char)
+	readPosition int  // current reading position in input (after current char)
+	ch           byte // current char under examination
+}
+
+func NewLexer(input string) *Lexer {
+	l := &Lexer{input: input}
+	l.readChar()
+	return l
+}
+
+func (l *Lexer) NextToken() Token {
+	var tok Token
+
+	l.skipWhitespace()
+
+	switch l.ch {
+	case '+':
+		tok = NewToken(PLUS, l.ch)
+	case '-':
+		tok = NewToken(MINUS, l.ch)
+	case '/':
+		tok = NewToken(SLASH, l.ch)
+	case '*':
+		tok = NewToken(ASTERISK, l.ch)
+	case 0:
+		tok.Literal = ""
+		tok.Type = EOF
+	default:
+		tok = NewToken(ATOM, l.ch)
+	}
+
+	l.readChar()
+	return tok
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
+
+func (l *Lexer) readChar() {
+	if l.readPosition >= len(l.input) {
+		l.ch = 0
+	} else {
+		l.ch = l.input[l.readPosition]
+	}
+	l.position = l.readPosition
+	l.readPosition += 1
+}
+```
+
+position 和 readPosition 两个游标用于定位当前处理的 Token 位置。
+
+在 readChar() 方法中通过赋值 l.ch = 0 标记输入字符串的结束。
+
+定义 AST 节点
+
+```go
+package main
+
+import (
+	"bytes"
+)
+
+type Node interface {
+	String() string
+}
+
+type Expression interface {
+	Node
+}
+
+type AtomLiteral struct {
+	Token Token
+	Value string
+}
+
+func (i *AtomLiteral) String() string  { return i.Value }
+
+type ExpressionStatement struct {
+	Expression Expression
+}
+
+func (es *ExpressionStatement) String() string {
+	if es.Expression != nil {
+		return es.Expression.String()
+	}
+	return ""
+}
+```
+
+### 术语定义
+
+**Infix Operator** 在两个操作数中间，像下面这样的表达式就是：`1 + 2`，`a * b`
+
+**Prefix Operator** 在操作数的前面，例如：`++a`
+
+**Postfix Operator** 在操作数的后面，例如：`b++`
+
+### Infix 实现
+
+### Prefix 实现
+
+### Postfix 实现

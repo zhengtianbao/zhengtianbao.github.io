@@ -286,7 +286,7 @@ ok      github.com/zhengtianbao/pratt   0.001s
 所以前缀表达式可以由以下形式表示：
 
 ```
-<prefix operator><expression>
+<prefix operator> <expression>
 ```
 
 定义前缀表达式类型
@@ -346,6 +346,8 @@ func (p *Parser) parsePrefixExpression() Expression {
 }
 ```
 
+解析 `-5` 表达式的过程为，先解析 - 代表的 Token，在 `parseExpression()` 方法中判断 `p.curToken.Type` 为 `MINUS`，因此构造 `PrefixExpression` 类型的表达式，在方法 `parsePrefixExpression()` 中调用 `p.nextToken()` 将 `p.curToken` 向右移，`expression.Right` 递归调用了 `p.parseExpression()` 来解析 5 这个 Token。
+
 编写测试用例：
 
 ```go
@@ -385,4 +387,132 @@ ok      github.com/zhengtianbao/pratt   0.001s
 ```
 
 ### 解析中缀表达式
+
+考虑以下表达式：
+
+```
+a + b
+```
+
+可以表示为以下形式：
+
+```
+<expression> <infix operator> <expression>
+```
+
+定义中缀表达式的类型
+
+```go
+type InfixExpression struct {
+	Token    Token // The operator token, e.g. +
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (oe *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(oe.Left.String())
+	out.WriteString(" " + oe.Operator + " ")
+	out.WriteString(oe.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+```
+
+在解析中缀表达式中，左边的表达式是能首先获得的，然后需要提前观察peekToken 是不是能满足中缀表达式的要求，扩展 `parseExpression()` 方法
+
+```go
+func (p *Parser) parseExpression() Expression {
+	var leftExp Expression
+	switch p.curToken.Type {
+	case ATOM:
+		leftExp = p.parseAtomExpression()
+	case MINUS:
+		leftExp = p.parsePrefixExpression()
+	default:
+		leftExp = nil
+	}
+
+	for p.peekToken.Type != EOF {
+		switch p.peekToken.Type {
+		case PLUS, MINUS, ASTERISK, SLASH:
+			p.nextToken()
+			leftExp = p.parseInfixExpression(leftExp)
+		default:
+			return leftExp
+		}
+	}
+	return leftExp
+}
+
+func (p *Parser) parseInfixExpression1(left Expression) Expression {
+	expression := &InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+
+	p.nextToken()
+	expression.Right = p.parseExpression()
+	return expression
+}
+```
+
+注意，在 `parseExpression()` 中使用了 `for p.peekToken.Type != EOF` 而不是 `if p.peekToken.Type != EOF`，这意味着可以解析 `a + b + c` 这样的表达式。
+
+编写测试用例：
+
+```go
+func TestInfixParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"a + b",
+			"(a + b)",
+		},
+		{
+			"a + -1",
+			"(a + (-1))",
+		},
+		{
+			"a + b + c",
+			"((a + b) + c)",
+		},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(tt.input)
+		p := NewParser(l)
+		actual := p.Parse1()
+
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+```
+
+测试结果报错：
+
+```
+$ go test -v . 
+=== RUN   TestAtomParsing
+--- PASS: TestAtomParsing (0.00s)
+=== RUN   TestPrefixParsing
+--- PASS: TestPrefixParsing (0.00s)
+=== RUN   TestInfixParsing
+    parser_test.go:134: expected="((a + b) + c)", got="(a + (b + c))"
+--- FAIL: TestInfixParsing (0.00s)
+FAIL
+FAIL    github.com/zhengtianbao/pratt   0.001s
+FAIL
+```
+
+问题出在代码中还没有设置优先级
 

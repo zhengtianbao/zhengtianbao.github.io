@@ -18,8 +18,8 @@ Pratt parsing 算法是一种通用的解析方法，用于将程序代码或其
 
 结合性指定了相同优先级的运算符在表达式中的结合顺序。运算符可以是左结合（left-associative）、右结合（right-associative）。
 
-- 左结合的运算符从左向右结合，例如这个表达式：`a - b - c`。减法是左结合的，它会按照从左到右的顺序结合，因此表达式会被解析为 `(a - b) - c`，而不是 `a - (b - c)`。
-- 右结合的运算符从右向左结合，例如这个表达式：`a ^ b ^ c`。如果指数运算是右结合的，它会按照从右到左的顺序结合。因此表达式会被解析为 `a ^ (b ^ c)`，而不是 `(a ^ b) ^ c`。
+- 左结合的运算符从左向右结合，例如这个表达式：`2 - 3 - 4`。减法是左结合的，它会按照从左到右的顺序结合，因此表达式会被解析为 `(2 - 3) - 4`，而不是 `2 - (3 - 4)`。
+- 右结合的运算符从右向左结合，例如这个表达式：`2 ^ 3 ^ 4`。如果指数运算是右结合的，它会按照从右到左的顺序结合。因此表达式会被解析为 `2 ^ (3 ^ 4)`，而不是 `(2 ^ 3) ^ 4`。
 
 Pratt parsing 算法通过将操作符根据它们的优先级和结合性进行分类，并使用不同的解析函数处理不同类型的操作符，从而解决了这个问题。这种方法使得解析器能够根据操作符的优先级和结合性正确地解析表达式，而不需要使用大量的上下文信息。
 
@@ -31,7 +31,14 @@ Pratt parsing 算法通过将操作符根据它们的优先级和结合性进行
 
 ## Pratt Parser 实现
 
-本文将用 go 语言描述 Pratt Parser 的实现，出于简单考虑，这里需要解析的 Token 定义为单个字符，数字和一些基本算数运算符。
+本文将用 go 语言描述 Pratt Parser 的实现，出于简单考虑，假设需要解析的 Token 定义为单个字符，数字和一些基本算数运算符。
+
+最终目的是实现以下效果：
+
+```
+input: (1 + (2 + 3) * 4) / (-(5 + 6!))
+output: ((1 + ((2 + 3) * 4)) / (-(5 + (6!))))
+```
 
 整个解析过程如下，输入的字符串通过 Lexer 分解为 Tokens，然后通过 Parser 解析为 AST。
 
@@ -423,7 +430,7 @@ func (oe *InfixExpression) String() string {
 }
 ```
 
-在解析中缀表达式中，左边的表达式是能首先获得的，然后需要提前观察peekToken 是不是能满足中缀表达式的要求，扩展 `parseExpression()` 方法
+在解析中缀表达式中，左边的表达式是能首先获得的，然后需要提前观察 `peekToken` 是不是能满足中缀表达式的要求，扩展 `parseExpression()` 方法
 
 ```go
 func (p *Parser) parseExpression() Expression {
@@ -449,7 +456,7 @@ func (p *Parser) parseExpression() Expression {
 	return leftExp
 }
 
-func (p *Parser) parseInfixExpression1(left Expression) Expression {
+func (p *Parser) parseInfixExpression(left Expression) Expression {
 	expression := &InfixExpression{
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
@@ -462,7 +469,7 @@ func (p *Parser) parseInfixExpression1(left Expression) Expression {
 }
 ```
 
-注意，在 `parseExpression()` 中使用了 `for p.peekToken.Type != EOF` 而不是 `if p.peekToken.Type != EOF`，这意味着可以解析 `a + b + c` 这样的表达式。
+注意，在 `parseExpression()` 中使用了 `for p.peekToken.Type != EOF {}` 而不是 `if p.peekToken.Type != EOF {}`，这意味着程序可以解析 `a + b + c` 这样的表达式。
 
 编写测试用例：
 
@@ -489,7 +496,7 @@ func TestInfixParsing(t *testing.T) {
 	for _, tt := range tests {
 		l := NewLexer(tt.input)
 		p := NewParser(l)
-		actual := p.Parse1()
+		actual := p.Parse()
 
 		if actual != tt.expected {
 			t.Errorf("expected=%q, got=%q", tt.expected, actual)
@@ -514,5 +521,402 @@ FAIL    github.com/zhengtianbao/pratt   0.001s
 FAIL
 ```
 
-问题出在代码中还没有设置优先级
+问题出在代码中还没有对优先级进行处理
 
+定义优先级
+
+```go
+const (
+	_ int = iota
+	LOWEST
+	SUM     // +
+	PRODUCT // *
+	PREFIX  // -X or !X
+)
+
+var precedences = map[TokenType]int{
+	PLUS:     SUM,
+	MINUS:    SUM,
+	ASTERISK: PRODUCT,
+	SLASH:    PRODUCT,
+}
+```
+
+修改 `parseExpression()` 方法，增加参数 `precedence`，用于表示当前解析表达式的优先级
+
+```go
+func (p *Parser) parseExpression(precedence int) Expression {
+	var leftExp Expression
+	switch p.curToken.Type {
+	case ATOM:
+		leftExp = p.parseAtomExpression()
+	case MINUS:
+		leftExp = p.parsePrefixExpression()
+	default:
+		leftExp = nil
+	}
+
+	for p.peekToken.Type != EOF {
+		switch p.peekToken.Type {
+		case PLUS, MINUS, ASTERISK, SLASH:
+			if precedence >= p.peekPrecedence() {
+				return leftExp
+			}
+			p.nextToken()
+			leftExp = p.parseInfixExpression(leftExp)
+		default:
+			return leftExp
+		}
+	}
+	return leftExp
+}
+
+func (p *Parser) parsePrefixExpression() Expression {
+	expression := &PrefixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+	}
+
+	p.nextToken()
+	expression.Right = p.parseExpression(PREFIX)
+	return expression
+}
+
+func (p *Parser) parseInfixExpression(left Expression) Expression {
+	expression := &InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+
+	return expression
+}
+
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+```
+
+增加一个测试
+
+```go
+func TestInfixParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"a + b",
+			"(a + b)",
+		},
+		{
+			"a + -1",
+			"(a + (-1))",
+		},
+		{
+			"a + b + c",
+			"((a + b) + c)",
+		},
+		{
+			"a + b + c",
+			"((a + b) + c)",
+		},
+		{
+			"a + b * c + d / e - f",
+			"(((a + (b * c)) + (d / e)) - f)",
+		},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(tt.input)
+		p := NewParser(l)
+		actual := p.Parse()
+
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+```
+
+OK，测试通过
+
+```
+$ go test -v . 
+=== RUN   TestAtomParsing
+--- PASS: TestAtomParsing (0.00s)
+=== RUN   TestPrefixParsing
+--- PASS: TestPrefixParsing (0.00s)
+=== RUN   TestInfixParsing
+--- PASS: TestInfixParsing (0.00s)
+PASS
+ok      github.com/zhengtianbao/pratt   0.001s
+```
+
+### 解析后缀表达式
+
+考虑以下表达式：
+
+```
+5!
+```
+
+所以后缀表达式可以由以下形式表示：
+
+```
+<expression> <postfix operator> 
+```
+
+定义后缀表达式类型
+
+```go
+type PostfixExpression struct {
+	Token    Token // The postfix token, e.g. !
+	Operator string
+	Left     Expression
+}
+
+func (pe *PostfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(pe.Left.String())
+	out.WriteString(pe.Operator)
+	out.WriteString(")")
+
+	return out.String()
+}
+```
+
+修改 `parseExpression()` 方法
+
+```go
+func (p *Parser) parseExpression(precedence int) Expression {
+	var leftExp Expression
+	switch p.curToken.Type {
+	case ATOM:
+		leftExp = p.parseAtomExpression()
+	case MINUS:
+		leftExp = p.parsePrefixExpression()
+	default:
+		leftExp = nil
+	}
+
+	for p.peekToken.Type != EOF {
+		switch p.peekToken.Type {
+		case PLUS, MINUS, ASTERISK, SLASH:
+			if precedence >= p.peekPrecedence() {
+				return leftExp
+			}
+			p.nextToken()
+			leftExp = p.parseInfixExpression(leftExp)
+		case EXCLAMATION:
+			if precedence >= p.peekPrecedence() {
+				return leftExp
+			}
+			p.nextToken()
+			leftExp = p.parsePostExpression(leftExp)
+		default:
+			return leftExp
+		}
+	}
+	return leftExp
+}
+
+func (p *Parser) parsePostExpression(left Expression) Expression {
+	expression := &PostfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	return expression
+}
+```
+
+增加后缀表达式的测试：
+
+```go
+func TestPostfixParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"a!",
+			"(a!)",
+		},
+		{
+			"a + b!",
+			"(a + (b!))",
+		},
+		{
+			"a + b! + c",
+			"((a + (b!)) + c)",
+		},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(tt.input)
+		p := NewParser(l)
+		actual := p.Parse()
+
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+```
+
+测试通过：
+
+```
+$ go test -v . 
+=== RUN   TestAtomParsing
+--- PASS: TestAtomParsing (0.00s)
+=== RUN   TestPrefixParsing
+--- PASS: TestPrefixParsing (0.00s)
+=== RUN   TestInfixParsing
+--- PASS: TestInfixParsing (0.00s)
+=== RUN   TestPostfixParsing
+--- PASS: TestPostfixParsing (0.00s)
+PASS
+ok      github.com/zhengtianbao/pratt   0.001s
+```
+
+### 解析包含括号的表达式
+
+最后，将要实现能够正确解析包含括号的表达式
+
+编写测试用例：
+
+```go
+func TestParenParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"(1 + 2)",
+			"(1 + 2)",
+		},
+		{
+			"(1 + 2) + 3",
+			"((1 + 2) + 3)",
+		},
+		{
+			"1 + (2 + 3) + 4",
+			"((1 + (2 + 3)) + 4)",
+		},
+		{
+			"(5 + 5) * 2",
+			"((5 + 5) * 2)",
+		},
+		{
+			"2 / (5 + 5)",
+			"(2 / (5 + 5))",
+		},
+		{
+			"(5 + 5) * 2 * (5 + 5)",
+			"(((5 + 5) * 2) * (5 + 5))",
+		},
+		{
+			"1 + (2 + 3) * 4",
+			"(1 + ((2 + 3) * 4))",
+		},
+		{
+			"-(5 + 5)",
+			"(-(5 + 5))",
+		},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(tt.input)
+		p := NewParser(l)
+		actual := p.Parse()
+
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+```
+
+修改 `parseExpression()` 方法，当遇到 `LPAREN` 类型时调用 `parseParenExpression()`
+
+```go
+func (p *Parser) parseExpression(precedence int) Expression {
+	var leftExp Expression
+	switch p.curToken.Type {
+	case ATOM:
+		leftExp = p.parseAtomExpression()
+	case MINUS:
+		leftExp = p.parsePrefixExpression()
+	case LPAREN:
+		leftExp = p.parseParenExpression()
+	default:
+		leftExp = nil
+	}
+
+	for p.peekToken.Type != EOF {
+		switch p.peekToken.Type {
+		case PLUS, MINUS, ASTERISK, SLASH:
+			if precedence >= p.peekPrecedence() {
+				return leftExp
+			}
+			p.nextToken()
+			leftExp = p.parseInfixExpression(leftExp)
+		case BANG:
+			if precedence >= p.peekPrecedence() {
+				return leftExp
+			}
+			p.nextToken()
+			leftExp = p.parsePostExpression(leftExp)
+		default:
+			return leftExp
+		}
+	}
+	return leftExp
+}
+
+func (p *Parser) parseParenExpression() Expression {
+	p.nextToken()
+
+	exp := p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(RPAREN) {
+		p.nextToken()
+	}
+	return exp
+}
+```
+
+执行测试
+
+```
+$ go test -v .
+=== RUN   TestAtomParsing
+--- PASS: TestAtomParsing (0.00s)
+=== RUN   TestPrefixParsing
+--- PASS: TestPrefixParsing (0.00s)
+=== RUN   TestInfixParsing
+--- PASS: TestInfixParsing (0.00s)
+=== RUN   TestPostfixParsing
+--- PASS: TestPostfixParsing (0.00s)
+=== RUN   TestParenParsing
+--- PASS: TestParenParsing (0.00s)
+PASS
+ok      github.com/zhengtianbao/pratt   0.001s
+```

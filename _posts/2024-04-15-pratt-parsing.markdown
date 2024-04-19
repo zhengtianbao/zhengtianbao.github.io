@@ -31,7 +31,7 @@ Pratt parsing 算法通过将操作符根据它们的优先级和结合性进行
 
 ## Pratt Parser 实现
 
-本文将用 go 语言描述 Pratt Parser 的实现，出于简单考虑，假设需要解析的 Token 定义为单个字符，数字和一些基本算数运算符。
+本文将用 go 语言描述 Pratt Parser 的实现，出于简单考虑，假设需要解析的 Token 定义为单个数字，基本算数运算符和括号。
 
 最终目的是实现以下效果：
 
@@ -50,8 +50,8 @@ input string --Lexer--> tokens --Parser--> AST
 
 Token 类型分为三类：
 
-- ATOM 表示单字节的字母或者数字
-- PLUS MINUS ASTERISK SLASH 分别对应符号 + - * /
+- NUMBER 表示单字节的字母或者数字
+- PLUS MINUS ASTERISK SLASH BANG LPAREN RPAREN 分别对应符号 + - * / ! ( )
 - EOF 表示输入字符串的结束
 
 ```go
@@ -60,14 +60,17 @@ package main
 type TokenType string
 
 const (
-	// Single Character or Number
-	ATOM = "ATOM"
+	// Single Number
+	NUMBER = "NUMBER"
 
 	// Operators
 	PLUS     = "+"
 	MINUS    = "-"
 	ASTERISK = "*"
 	SLASH    = "/"
+	BANG     = "!"
+	LPAREN   = "("
+	RPAREN   = ")"
 
 	// End Of File
 	EOF = "EOF"
@@ -85,7 +88,7 @@ func NewToken(tokenType TokenType, ch byte) Token {
 
 ### 定义 Lexer
 
-Lexer 主要提供了 `NextToken()` 方法，用于获取下一个 Token
+Lexer 用于解析输入字符串，生成 Tokens，主要提供了 `NextToken()` 方法，用于获取下一个 Token。
 
 ```go
 package main
@@ -117,11 +120,17 @@ func (l *Lexer) NextToken() Token {
 		tok = NewToken(SLASH, l.ch)
 	case '*':
 		tok = NewToken(ASTERISK, l.ch)
+	case '!':
+		tok = NewToken(BANG, l.ch)
+	case '(':
+		tok = NewToken(LPAREN, l.ch)
+	case ')':
+		tok = NewToken(RPAREN, l.ch)
 	case 0:
 		tok.Literal = ""
 		tok.Type = EOF
 	default:
-		tok = NewToken(ATOM, l.ch)
+		tok = NewToken(NUMBER, l.ch)
 	}
 
 	l.readChar()
@@ -153,7 +162,7 @@ func (l *Lexer) readChar() {
 
 AST 是由节点（Node）构成的树状结构，因此定义一个基本接口 `Node`。
 
-同时我们需要解析的都是表达式（Expression），注意和语句（statement）的区别：表达式返回值，而语句没有返回值，在 rust 语言里面就对这两者进行了明确的定义。
+同时我们需要解析的都是表达式（Expression），注意表达式和语句（statement）的区别：参考 rust 语言里面对这两者的定义，表达式返回值，而语句没有返回值。
 
 最基本的表达式：
 
@@ -161,9 +170,11 @@ AST 是由节点（Node）构成的树状结构，因此定义一个基本接口
 1
 ```
 
-单个数字就是一个表达式，因为它代表返回值 1，在这里把这种单字节的数字或者字母定义为 `Atom` 类型，实现了 `Expression` 接口。
+单个数字就是一个表达式，因为它代表返回值 1，在这里把这种单字节的数字或者字母定义为 `Number` 类型，实现了 `Expression` 接口。
 
 ```go
+package main
+
 // The base Node interface
 type Node interface {
 	String() string
@@ -174,19 +185,21 @@ type Expression interface {
 	Node
 }
 
-type Atom struct {
+type Number struct {
 	Token Token
 	Value string
 }
 
-func (i *Atom) String() string { return i.Value }
+func (i *Number) String() string { return i.Value }
 ```
 
 ### 解析单字符表达式
 
-现在开始编写一个简单版本的 Parser，可以解析上面的单个数字的表达式。
+现在开始编写一个最简单版本的 Parser，只能够解析上面的单个数字的表达式。
 
 ```go
+package main
+
 type Parser struct {
 	l *Lexer
 
@@ -212,22 +225,19 @@ func (p *Parser) nextToken() {
 
 func (p *Parser) Parse() string {
 	switch p.curToken.Type {
-	case ATOM:
-		return p.parseAtomExpression().String()
+	case NUMBER:
+		return p.parseNumberExpression().String()
 	default:
 		return ""
 	}
 }
 
-func (p *Parser) parseAtomExpression() Expression {
-	atom := &Atom{}
-	atom.Token = p.curToken
-	atom.Value = p.curToken.Literal
-	return atom
+func (p *Parser) parseNumberExpression() Expression {
+	return &Number{Token: p.curToken, Value: p.curToken.Literal}
 }
 ```
 
-在 `Parse()` 方法中简单匹配当前 Token 的类型，因为单个数字定义为 `ATOM` 类型，所以调用 `parseAtomExpression()` 方法，生成 `Atom` 表达式类型。
+在 `Parse()` 方法中简单匹配当前 Token 的类型，因为单个数字定义为 `NUMBER` 类型，所以调用 `parseNumberExpression()` 方法，生成 `Number` 表达式。
 
 编写测试用例：
 
@@ -238,7 +248,7 @@ import (
 	"testing"
 )
 
-func TestAtomParsing(t *testing.T) {
+func TestNumberParsing(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -246,10 +256,6 @@ func TestAtomParsing(t *testing.T) {
 		{
 			"",
 			"",
-		},
-		{
-			"a",
-			"a",
 		},
 		{
 			"1",
@@ -267,15 +273,14 @@ func TestAtomParsing(t *testing.T) {
 		}
 	}
 }
-
 ```
 
 执行测试命令，通过测试：
 
 ```
 $ go test -v .
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 PASS
 ok      github.com/zhengtianbao/pratt   0.001s
 ```
@@ -288,17 +293,21 @@ ok      github.com/zhengtianbao/pratt   0.001s
 -5 * 3
 ```
 
-其中的 - 优先级高于 *，所以应该解析为 ((-5) * 3)，像这里的 -5 就是前缀表达式，为了避免引起优先级歧义这里用括号括起来
+其中的 - 优先级高于 *，所以应该解析为 ((-5) * 3)，像这里的 -5 就是前缀表达式，为了避免引起优先级歧义这里将解析结果用括号括起来。
 
-所以前缀表达式可以由以下形式表示：
+前缀表达式可以由以下形式表示：
 
 ```
 <prefix operator> <expression>
 ```
 
-定义前缀表达式类型
+定义前缀表达式类型：
 
 ```go
+import (
+	"bytes"
+)
+
 type PrefixExpression struct {
 	Token    Token // The prefix token, e.g. -
 	Operator string
@@ -317,7 +326,9 @@ func (pe *PrefixExpression) String() string {
 }
 ```
 
-现在需要解析的表达式长度变长了，我们将 `Parse()` 和 `parseExpression()` 方法稍作修改：
+不同与表示单个数字的 `NumberExpression` 直接输出数字，`PrefixExpression` 将结果用括号括起来，方便表示优先级。
+
+现在需要解析的表达式长度变长了，我们将 `Parse()` 方法稍作修改：
 
 ```go
 func (p *Parser) Parse() string {
@@ -331,8 +342,8 @@ func (p *Parser) Parse() string {
 func (p *Parser) parseExpression() Expression {
 	var leftExp Expression
 	switch p.curToken.Type {
-	case ATOM:
-		leftExp = p.parseAtomExpression()
+	case NUMBER:
+		leftExp = p.parseNumberExpression()
 	case MINUS:
 		leftExp = p.parsePrefixExpression()
 	default:
@@ -353,7 +364,7 @@ func (p *Parser) parsePrefixExpression() Expression {
 }
 ```
 
-解析 `-5` 表达式的过程为，先解析 - 代表的 Token，在 `parseExpression()` 方法中判断 `p.curToken.Type` 为 `MINUS`，因此构造 `PrefixExpression` 类型的表达式，在方法 `parsePrefixExpression()` 中调用 `p.nextToken()` 将 `p.curToken` 向右移，`expression.Right` 递归调用了 `p.parseExpression()` 来解析 5 这个 Token。
+解析 `-5` 表达式的过程为，先解析 - 代表的 Token，在 `parseExpression()` 方法中判断 `p.curToken.Type` 为 `MINUS`，因此构造 `PrefixExpression` 类型的表达式，在方法 `parsePrefixExpression()` 中调用 `p.nextToken()` 将 `p.curToken` 向右移，`expression.Right` 递归调用了 `p.parseExpression()` 来解析 5 这个 Token，最终形成了一个 `PrefixExpression`。
 
 编写测试用例：
 
@@ -364,8 +375,12 @@ func TestPrefixParsing(t *testing.T) {
 		expected string
 	}{
 		{
-			"-a",
-			"(-a)",
+			"-1",
+			"(-1)",
+		},
+		{
+			"--1",
+			"(-(-1))",
 		},
 	}
 
@@ -381,12 +396,12 @@ func TestPrefixParsing(t *testing.T) {
 }
 ```
 
-OK，测试通过
+OK，测试顺利通过：
 
 ```
-$ go test -v . 
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+$ go test -v .
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 === RUN   TestPrefixParsing
 --- PASS: TestPrefixParsing (0.00s)
 PASS
@@ -407,7 +422,7 @@ a + b
 <expression> <infix operator> <expression>
 ```
 
-定义中缀表达式的类型
+定义中缀表达式的类型：
 
 ```go
 type InfixExpression struct {
@@ -430,14 +445,18 @@ func (oe *InfixExpression) String() string {
 }
 ```
 
-在解析中缀表达式中，左边的表达式是能首先获得的，然后需要提前观察 `peekToken` 是不是能满足中缀表达式的要求，扩展 `parseExpression()` 方法
+与前缀表达式 `PrefixExpression` 一样，中缀表达式 `InfixExpression` 的输出也用括号括起来。
+
+在解析前缀表达式中，我们可以根据首先碰到的 Token 类型来判断是不是一个前缀表达式，例如碰到 - 代表的 Token `MINUS`，那么就能推定必然是个前缀表达式。但是如何确定中缀表达式呢？想象一下在解析表达式 `1 + 2` 过程中首先碰到的是数字 1 代表的 Token `NUMBER`，只有提前知道下一个 Token 是 + 代表的 `PLUS` 时才能作为中缀表达式进行解析，因此在解析中缀表达式中，`Parser` 中的 `peekToken` 就体现出作用了，可以用来提前知道下一个字符的 Token 类型。
+
+扩展 `parseExpression()` 方法：
 
 ```go
 func (p *Parser) parseExpression() Expression {
 	var leftExp Expression
 	switch p.curToken.Type {
-	case ATOM:
-		leftExp = p.parseAtomExpression()
+	case NUMBER:
+		leftExp = p.parseNumberExpression()
 	case MINUS:
 		leftExp = p.parsePrefixExpression()
 	default:
@@ -480,16 +499,16 @@ func TestInfixParsing(t *testing.T) {
 		expected string
 	}{
 		{
-			"a + b",
-			"(a + b)",
+			"1 + 2",
+			"(1 + 2)",
 		},
 		{
-			"a + -1",
-			"(a + (-1))",
+			"1 + -2",
+			"(1 + (-2))",
 		},
 		{
-			"a + b + c",
-			"((a + b) + c)",
+			"1 + 2 + 3",
+			"((1 + 2) + 3)",
 		},
 	}
 
@@ -505,25 +524,25 @@ func TestInfixParsing(t *testing.T) {
 }
 ```
 
-测试结果报错：
+运行测试，结果报错：
 
 ```
-$ go test -v . 
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+$ go test -v .
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 === RUN   TestPrefixParsing
 --- PASS: TestPrefixParsing (0.00s)
 === RUN   TestInfixParsing
-    parser_test.go:134: expected="((a + b) + c)", got="(a + (b + c))"
+    parser_test.go:84: expected="((1 + 2) + 3)", got="(1 + (2 + 3))"
 --- FAIL: TestInfixParsing (0.00s)
 FAIL
 FAIL    github.com/zhengtianbao/pratt   0.001s
 FAIL
 ```
 
-问题出在代码中还没有对优先级进行处理
+很显然，在解析 `1 + 2 + 3` 这个表达式的时候，没有按我们预期的顺序进行结合，按结果看是右结合的，我们需要增加一个判断，如果右边的运算符优先级比左边的高，才能进行右结合，目前的代码中还没有对优先级进行处理。
 
-定义优先级
+先定义优先级：
 
 ```go
 const (
@@ -531,7 +550,8 @@ const (
 	LOWEST
 	SUM     // +
 	PRODUCT // *
-	PREFIX  // -X or !X
+	PREFIX  // -X
+	POSTFIX // X!
 )
 
 var precedences = map[TokenType]int{
@@ -539,17 +559,26 @@ var precedences = map[TokenType]int{
 	MINUS:    SUM,
 	ASTERISK: PRODUCT,
 	SLASH:    PRODUCT,
+	BANG:     POSTFIX,
 }
 ```
 
 修改 `parseExpression()` 方法，增加参数 `precedence`，用于表示当前解析表达式的优先级
 
 ```go
+func (p *Parser) Parse() string {
+	expr := p.parseExpression(LOWEST)
+	if expr == nil {
+		return ""
+	}
+	return expr.String()
+}
+
 func (p *Parser) parseExpression(precedence int) Expression {
 	var leftExp Expression
 	switch p.curToken.Type {
-	case ATOM:
-		leftExp = p.parseAtomExpression()
+	case NUMBER:
+		leftExp = p.parseNumberExpression()
 	case MINUS:
 		leftExp = p.parsePrefixExpression()
 	default:
@@ -610,7 +639,9 @@ func (p *Parser) peekPrecedence() int {
 }
 ```
 
-增加一个测试
+增加了两个方法 `curPrecedence()` 和 `peekPrecedence()` 用于获取当前运算符优先级以及下一个字符的优先级，数字类型 `NUMBER` 是最低优先级的。
+
+增加一个测试案例：
 
 ```go
 func TestInfixParsing(t *testing.T) {
@@ -619,24 +650,20 @@ func TestInfixParsing(t *testing.T) {
 		expected string
 	}{
 		{
-			"a + b",
-			"(a + b)",
+			"1 + 2",
+			"(1 + 2)",
 		},
 		{
-			"a + -1",
-			"(a + (-1))",
+			"1 + -2",
+			"(1 + (-2))",
 		},
 		{
-			"a + b + c",
-			"((a + b) + c)",
+			"1 + 2 + 3",
+			"((1 + 2) + 3)",
 		},
 		{
-			"a + b + c",
-			"((a + b) + c)",
-		},
-		{
-			"a + b * c + d / e - f",
-			"(((a + (b * c)) + (d / e)) - f)",
+			"1 + 2 * 3 + 4 / 5 - 6",
+			"(((1 + (2 * 3)) + (4 / 5)) - 6)",
 		},
 	}
 
@@ -652,12 +679,12 @@ func TestInfixParsing(t *testing.T) {
 }
 ```
 
-OK，测试通过
+OK，测试通过：
 
 ```
-$ go test -v . 
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+$ go test -v .
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 === RUN   TestPrefixParsing
 --- PASS: TestPrefixParsing (0.00s)
 === RUN   TestInfixParsing
@@ -707,8 +734,8 @@ func (pe *PostfixExpression) String() string {
 func (p *Parser) parseExpression(precedence int) Expression {
 	var leftExp Expression
 	switch p.curToken.Type {
-	case ATOM:
-		leftExp = p.parseAtomExpression()
+	case NUMBER:
+		leftExp = p.parseNumberExpression()
 	case MINUS:
 		leftExp = p.parsePrefixExpression()
 	default:
@@ -723,7 +750,7 @@ func (p *Parser) parseExpression(precedence int) Expression {
 			}
 			p.nextToken()
 			leftExp = p.parseInfixExpression(leftExp)
-		case EXCLAMATION:
+		case BANG:
 			if precedence >= p.peekPrecedence() {
 				return leftExp
 			}
@@ -746,6 +773,8 @@ func (p *Parser) parsePostExpression(left Expression) Expression {
 }
 ```
 
+后缀表达式跟中缀表达式的区别就是没有右侧表达式 `Right`， 因此不需要调用 `p.nextToken()`。
+
 增加后缀表达式的测试：
 
 ```go
@@ -755,16 +784,16 @@ func TestPostfixParsing(t *testing.T) {
 		expected string
 	}{
 		{
-			"a!",
-			"(a!)",
+			"1!",
+			"(1!)",
 		},
 		{
-			"a + b!",
-			"(a + (b!))",
+			"1 + 2!",
+			"(1 + (2!))",
 		},
 		{
-			"a + b! + c",
-			"((a + (b!)) + c)",
+			"1 + 2! + 3",
+			"((1 + (2!)) + 3)",
 		},
 	}
 
@@ -783,9 +812,9 @@ func TestPostfixParsing(t *testing.T) {
 测试通过：
 
 ```
-$ go test -v . 
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+$ go test -v .
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 === RUN   TestPrefixParsing
 --- PASS: TestPrefixParsing (0.00s)
 === RUN   TestInfixParsing
@@ -798,7 +827,7 @@ ok      github.com/zhengtianbao/pratt   0.001s
 
 ### 解析包含括号的表达式
 
-最后，将要实现能够正确解析包含括号的表达式
+最后，将要实现能够正确解析包含括号的表达式。
 
 编写测试用例：
 
@@ -854,14 +883,14 @@ func TestParenParsing(t *testing.T) {
 }
 ```
 
-修改 `parseExpression()` 方法，当遇到 `LPAREN` 类型时调用 `parseParenExpression()`
+修改 `parseExpression()` 方法，当遇到 `LPAREN` 类型时调用 `parseParenExpression()`：
 
 ```go
 func (p *Parser) parseExpression(precedence int) Expression {
 	var leftExp Expression
 	switch p.curToken.Type {
-	case ATOM:
-		leftExp = p.parseAtomExpression()
+	case NUMBER:
+		leftExp = p.parseNumberExpression()
 	case MINUS:
 		leftExp = p.parsePrefixExpression()
 	case LPAREN:
@@ -896,19 +925,21 @@ func (p *Parser) parseParenExpression() Expression {
 
 	exp := p.parseExpression(LOWEST)
 
-	if p.peekTokenIs(RPAREN) {
+	if p.peekToken.Type == RPAREN {
 		p.nextToken()
 	}
 	return exp
 }
 ```
 
-执行测试
+在 `parseParenExpression()` 方法中很简单，就是跳过左括号，解析括号内的表达式，然后再跳过对应的右括号。
+
+执行测试：
 
 ```
 $ go test -v .
-=== RUN   TestAtomParsing
---- PASS: TestAtomParsing (0.00s)
+=== RUN   TestNumberParsing
+--- PASS: TestNumberParsing (0.00s)
 === RUN   TestPrefixParsing
 --- PASS: TestPrefixParsing (0.00s)
 === RUN   TestInfixParsing
@@ -920,3 +951,13 @@ $ go test -v .
 PASS
 ok      github.com/zhengtianbao/pratt   0.001s
 ```
+
+至此，已经实现了一个简单版本的 Pratt Parser。
+
+详细代码请查看：<https://github.com/zhengtianbao/pratt>
+
+## 参考链接
+
+<https://interpreterbook.com/>
+
+<https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html>

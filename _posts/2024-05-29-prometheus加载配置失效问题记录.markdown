@@ -81,13 +81,13 @@ scrape_configs:
 
 为了方便对接入 prometheus 监控系统进行管理，我们开发了一套系统：主要就是维护系统、应用与配置文件的对应关系。通过前端表单填写接入信息生成对应的配置文件，然后请求 prometheus 的 reload 接口，在不需要重启 prometheus 服务的情况下热加载配置。
 
-注：配置热加载需要在 promethues 启动参数中添加启动参数 `--web.enable-lifecycle`，发送以下请求热加载配置：
+注：配置热加载需要在 promethues 启动参数中添加启动参数 `--web.enable-lifecycle`，发送以下请求触发热加载：
 
 ```
 curl -X POST http://prometheus:9090/-/reload
 ```
 
-没想到的是随着接入系统的不断增加，发现有些时候配置文件已经更新，但是执行 reload 操作后 prometheus 采集的 target 却没有生成，因为这个现象是偶发的，以为是误操作导致的，后来频率越来越高才发觉问题没那么简单。
+没想到的是随着接入系统的不断增加，发现有些时候配置文件已经更新，但是执行 reload 操作后 prometheus 采集的 target 却没有生成，因为这个现象是偶发的，开始以为是误操作导致的，后来频率越来越高才发觉问题没那么简单。
 
 ## 排查过程
 
@@ -144,9 +144,9 @@ done
 
 解释下这个脚本：
 
-1. 生成 prometheus 主配置文件总的 job
-2. 生成对应系统的 yaml 配置
-3. 执行 10 次之后执行 reload 操作
+1. 生成 prometheus 主配置文件中的 job
+2. 生成对应系统的 yaml 配置文件
+3. 每执行 10 次之后执行 reload 操作
 4. 比较 prometheus 抓取 target 数量是否正确
 
 执行后产生输出：
@@ -189,7 +189,7 @@ func (d *Discovery) Run(ctx context.Context, ch chan<- []*targetgroup.Group) {
 }
 ```
 
-发现该报错是调用 fsnotify 库的 `NewWatcher()` 出错导致的
+可以看出该报错是调用 fsnotify 库的 `NewWatcher()` 出错导致的
 
 inotify.go：
 
@@ -205,11 +205,11 @@ func NewWatcher() (*Watcher, error) {
 }
 ```
 
-执行了系统调用，查看说明文档：
+`NewWatcher()` 执行了系统调用，查看说明文档：
 
 > The `fs.inotify.max_user_watches` sysctl variable specifies the upper limit for the number of watches per user, and `fs.inotify.max_user_instances` specifies the maximum number of inotify instances per user. Every Watcher you create is an "instance", and every path you add is a "watch".
 
-有两个系统变量影响了 inotfiy 的数量，在 `/proc/sys/fs/inotify/` 路径下查看：
+有两个系统变量影响了 inotfiy 的数量，可以在 `/proc/sys/fs/inotify/` 路径下查看：
 
 ```
 $ cat /proc/sys/fs/inotify/max_user_watches 

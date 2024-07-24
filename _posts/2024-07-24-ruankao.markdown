@@ -1,0 +1,42 @@
+---
+layout: post
+title: "通过软考高级「系统架构师」的一些经验总结"
+date: 2024-07-24 08:56:20 +0800
+categories: ["2024"]
+tags: [thought]
+---
+
+在 2023 年下半年的时候，我有了参加软考高级「系统架构师」考试的想法。众所周知，软考的证书其实并没有什么用处，并不会因为你有这个证就认为你是架构师了。那我为什么还要考呢，因为考虑到整体的大环境不行，各个公司降息裁员的消息层出不穷，指不定哪天就要面临「毕业」，对未来的预期实在是不容乐观，现实就是那么令人无奈，不管你是如何轻视这个证书，但它却是官方认可的计算机行业资质证书，多一本证书也许就能在茫茫多的求职者简历中增加一点留存下来的几率。
+
+为此，我参加了 2023 年下半年以及 2024 年上半年两次考试，第一次挂在论文上面，第二次顺利通过，总体感觉这个「系统架构师」考试难度不大，熟悉 Java 生态圈技术栈的有很大优势，当然也存在一定的运气成份。
+
+考试分三个科目：综合知识，案例分析以及论文。在 2023 年的时候上午是综合知识和案例分析联考，下午是论文，而 2024 年的时候时间上做了调整，上午是综合知识和案例分析联考，下午是论文。综合知识和案例分析的时间很充裕，论文就要看对所选题材的熟悉程度，我在 2023 年的时候选择了多源数据集成的论文题材，因为脱离实际工作，生拉硬扯凑字数，果不其然挂在论文，而 2024 年的云上自动化运维则信手拈来，随意发挥。
+
+综合知识：考察范围广，但是作为计算机专业的，保证基本分不丢的情况下还是容易通过的。这个东西容易忘，建议考前多刷历年真题。
+
+案例分析：必须要掌握质量属性场景，妥妥的属于送分题，其他的就看平时的积累了，也是一些常见的面试会问到的知识点：
+
+- CAP 理论（Consistency，Availability，Partition Tolerance）
+- 一致性 Hash（Consistent Hashing）
+- 共识算法（Consensus Algorithms）
+- 强一致性和最终一致性（Strong vs Eventual Consistency）
+- 流处理和批处理（Stream vs Batch Processing）
+- 缓存（Read-Through vs Write-Through Cache）
+- 同步和异步通信（Synchronous vs asynchronous communication）
+- Redis 雪崩（Bloom Filter）
+- 分布式缓存（Distrbuted Caching）
+- 分布式锁（Distributed Locking）
+- 数据库类型 MySQL NoSQL
+- 负载均衡 Nginx （Load Balancing）
+- 缓存与数据库数据一致性（Consistency Patterns）
+- 心跳检测（Heartbeat）
+- 数据库扩容，分片，复制，冗余（Database Scaling，Sharding，Replication，Redundancy）
+- 消息队列（Message Queue）
+- 客户端-服务端架构（Client-Server Architecture）
+- 微服务架构（Microservices Architecture）
+- 无服务架构（Serverless Architecture）
+- 事件驱动架构（Event-Driven Architecture）
+
+论文：建议准备一篇大数据相关的文章，从架构上而言覆盖的较为全面，适用性较好。另外就是现在论文已经改为机考，可以先整理好思路列出提纲，分好段落再逐一完善补充，这样有利于字数的把控。
+
+最后总结下，放松心态，多考几次总能过的。
